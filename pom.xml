@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>2.0</version>
+        <version>1.532</version>
     </parent>
 
     <artifactId>deploy</artifactId>
@@ -76,12 +76,6 @@
             <groupId>org.codehaus.cargo</groupId>
             <artifactId>cargo-core-container-jboss</artifactId>
             <version>${cargo.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.ant</groupId>
-                    <artifactId>ant</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -109,21 +103,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>org.glassfish.deployment</groupId>
             <artifactId>deployment-client</artifactId>
-            <version>3.1.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>xml-apis</groupId>
-            <artifactId>xml-apis</artifactId>
-            <version>1.4.01</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.ant</groupId>
-                    <artifactId>ant</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>3.1</version>
         </dependency>
 
     </dependencies>
@@ -152,3 +134,4 @@
     </pluginRepositories>
 
 </project>
+
