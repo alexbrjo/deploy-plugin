@@ -32,6 +32,11 @@ public class Tomcat8xAdapter extends TomcatAdapter {
         super(url, credentialsId);
     }
 
+    @Deprecated
+    public Tomcat8xAdapter(String url, String userName, String password) {
+        super(url, userName, password);
+    }
+
     public void configure(Configuration config, EnvVars envVars, VariableResolver<String> resolver) {
         super.configure(config, envVars, resolver);
         try {

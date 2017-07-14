@@ -11,6 +11,7 @@ import java.net.URL;
 import org.codehaus.cargo.container.configuration.Configuration;
 import org.codehaus.cargo.container.property.GeneralPropertySet;
 import org.codehaus.cargo.container.property.ServletPropertySet;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Base class for JBoss adapters.
@@ -22,6 +23,12 @@ public abstract class JBossAdapter extends PasswordProtectedAdapterCargo {
 
     protected JBossAdapter(String url, String credentialsId) {
         super(credentialsId);
+        this.url = url;
+    }
+
+    @Deprecated
+    protected JBossAdapter(String url, String userName, String password) {
+        super(userName, password);
         this.url = url;
     }
 

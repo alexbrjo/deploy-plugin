@@ -12,9 +12,15 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author Kohsuke Kawaguchi
  */
 public class JBoss4xAdapter extends JBossAdapter {
+
     @DataBoundConstructor
     public JBoss4xAdapter(String url, String credentialsId) {
         super(url, credentialsId);
+    }
+
+    @Deprecated
+    public JBoss4xAdapter(String url, String userName, String password) {
+        super(url, userName, password);
     }
 
     @Override

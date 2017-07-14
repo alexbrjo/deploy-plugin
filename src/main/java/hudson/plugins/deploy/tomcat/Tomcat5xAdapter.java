@@ -17,6 +17,11 @@ public class Tomcat5xAdapter extends TomcatAdapter {
         super(url, credentialsId);
     }
 
+    @Deprecated
+    public Tomcat5xAdapter(String url, String userName, String password) {
+        super(url, userName, password);
+    }
+
     public String getContainerId() {
         return "tomcat5x";
     }

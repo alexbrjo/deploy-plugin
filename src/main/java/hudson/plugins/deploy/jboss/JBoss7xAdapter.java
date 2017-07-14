@@ -7,9 +7,15 @@ import hudson.plugins.deploy.ContainerAdapterDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class JBoss7xAdapter extends JBossAdapter {
+
     @DataBoundConstructor
     public JBoss7xAdapter(String url, String credentialsId) {
         super(url, credentialsId);
+    }
+
+    @Deprecated
+    public JBoss7xAdapter(String url, String userName, String password) {
+        super(url, userName, password);
     }
 
     @Override

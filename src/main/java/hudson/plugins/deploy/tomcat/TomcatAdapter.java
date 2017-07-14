@@ -13,6 +13,7 @@ import org.codehaus.cargo.container.configuration.Configuration;
 import org.codehaus.cargo.container.deployable.WAR;
 import org.codehaus.cargo.container.property.RemotePropertySet;
 import org.codehaus.cargo.container.tomcat.TomcatWAR;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Base class for Tomcat adapters.
@@ -27,6 +28,12 @@ public abstract class TomcatAdapter extends PasswordProtectedAdapterCargo {
 
     public TomcatAdapter(String url, String credentialsId) {
         super(credentialsId);
+        this.url = url;
+    }
+
+    @Deprecated
+    public TomcatAdapter(String url, String userName, String password) {
+        super(userName, password);
         this.url = url;
     }
 
