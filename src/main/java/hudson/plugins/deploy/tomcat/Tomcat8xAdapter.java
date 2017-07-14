@@ -1,5 +1,6 @@
 package hudson.plugins.deploy.tomcat;
 
+import com.cloudbees.plugins.credentials.CredentialsMatcher;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.plugins.deploy.ContainerAdapterDescriptor;
@@ -11,6 +12,7 @@ import java.net.URL;
 import org.codehaus.cargo.container.configuration.Configuration;
 import org.codehaus.cargo.container.property.RemotePropertySet;
 import org.kohsuke.stapler.DataBoundConstructor;
+import com.cloudbees.plugins.credentials.Credentials;
 
 /**
  * Tomcat 8.x
@@ -23,12 +25,11 @@ public class Tomcat8xAdapter extends TomcatAdapter {
      * Tomcat 8 support
      *
      * @param url Tomcat server location (for example: http://localhost:8080)
-     * @param password tomcat manager password
-     * @param userName tomcat manager username
+     * @param credentialsId tomcat manager username password credentials
      */
     @DataBoundConstructor
-    public Tomcat8xAdapter(String url, String password, String userName) {
-        super(url, password, userName);
+    public Tomcat8xAdapter(String url, String credentialsId) {
+        super(url, credentialsId);
     }
 
     public void configure(Configuration config, EnvVars envVars, VariableResolver<String> resolver) {

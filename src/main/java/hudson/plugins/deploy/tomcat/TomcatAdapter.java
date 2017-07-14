@@ -3,6 +3,7 @@ package hudson.plugins.deploy.tomcat;
 import hudson.EnvVars;
 import hudson.plugins.deploy.PasswordProtectedAdapterCargo;
 import hudson.util.VariableResolver;
+import hudson.model.Run;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -24,8 +25,8 @@ public abstract class TomcatAdapter extends PasswordProtectedAdapterCargo {
      */
     public final String url;
 
-    public TomcatAdapter(String url, String password, String userName) {
-        super(userName, password);
+    public TomcatAdapter(String url, String credentialsId) {
+        super(credentialsId);
         this.url = url;
     }
 

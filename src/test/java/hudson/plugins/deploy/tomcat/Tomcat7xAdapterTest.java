@@ -1,5 +1,9 @@
 package hudson.plugins.deploy.tomcat;
 
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.CredentialsScope;
+import com.cloudbees.plugins.credentials.domains.Domain;
+import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 import hudson.EnvVars;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
@@ -41,8 +45,11 @@ public class Tomcat7xAdapterTest {
     @Rule public JenkinsRule jenkinsRule = new JenkinsRule();
 
     @Before
-    public void setup() {
-        adapter = new  Tomcat7xAdapter(url, password, username);
+    public void setup() throws Exception {
+        UsernamePasswordCredentialsImpl c = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "test", "sample", username, password);
+        CredentialsProvider.lookupStores(jenkinsRule.jenkins).iterator().next().addCredentials(Domain.global(), c);
+
+        adapter = new  Tomcat7xAdapter(url, c.getId());
     }
 
     @Test
@@ -52,29 +59,9 @@ public class Tomcat7xAdapterTest {
 
     @Test
     public void testConfigure() {
-        Assert.assertEquals(adapter.url,url);
-        Assert.assertEquals(adapter.userName,username);
-        Assert.assertEquals(adapter.getPassword(),password);
-    }
-    
-    @Test
-    public void testVariables() throws IOException, InterruptedException, ExecutionException {
-    	EnvironmentVariablesNodeProperty property = new EnvironmentVariablesNodeProperty();
-    	EnvVars envVars = property.getEnvVars();
-    	envVars.put(urlVariable, url);
-    	envVars.put(usernameVariable, username);
-    	jenkinsRule.jenkins.getGlobalNodeProperties().add(property);
-
-        FreeStyleProject project = jenkinsRule.createFreeStyleProject();
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
-        BuildListener listener = new StreamBuildListener(new ByteArrayOutputStream());
-
-        adapter = new  Tomcat7xAdapter(getVariable(urlVariable), password, getVariable(usernameVariable));
-        Configuration config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
-        adapter.configure(config, build.getEnvironment(listener), build.getBuildVariableResolver());
-        
-        Assert.assertEquals(configuredUrl, config.getPropertyValue(RemotePropertySet.URI));
-        Assert.assertEquals(username, config.getPropertyValue(RemotePropertySet.USERNAME));
+        Assert.assertEquals(url, adapter.url);
+        Assert.assertEquals(username, adapter.getUsername());
+        Assert.assertEquals(password, adapter.getPassword());
     }
     
     private String getVariable(String variableName) {

@@ -1,5 +1,10 @@
 package hudson.plugins.deploy.glassfish;
 
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.CredentialsScope;
+import com.cloudbees.plugins.credentials.domains.Domain;
+import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
+import hudson.plugins.deploy.tomcat.Tomcat7xAdapter;
 import org.codehaus.cargo.container.ContainerType;
 import org.codehaus.cargo.container.configuration.Configuration;
 import org.codehaus.cargo.container.configuration.ConfigurationType;
@@ -16,13 +21,11 @@ public class GlassFishAdapterTest {
 
     private GlassFish3xAdapter glassFish3xAdapter;
     private static final String home = "/dev/null";
-    private static final String username = "username";
-    private static final String password = "password";
     private static final String port = "1234";
 
     @Before
     public void setup() {
-        glassFish3xAdapter = new GlassFish3xAdapter(home, password, username, port, null);
+        glassFish3xAdapter = new GlassFish3xAdapter(home, "", port, "");
     }
 
     @Test

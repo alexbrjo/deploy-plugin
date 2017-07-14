@@ -1,11 +1,16 @@
 package hudson.plugins.deploy.glassfish;
 
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.CredentialsScope;
+import com.cloudbees.plugins.credentials.domains.Domain;
+import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.StreamBuildListener;
 import hudson.model.FreeStyleProject;
+import hudson.plugins.deploy.tomcat.Tomcat7xAdapter;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 
 import java.io.ByteArrayOutputStream;
@@ -39,24 +44,24 @@ public class GlassFish3xAdapterTest {
     private GlassFish3xAdapter adapter;
     private GlassFish3xAdapter remoteAdapter;
     private static final String home = "D:/development/server/glassfishv3";
-    private static final String homeVariable = "home";
     private static final String username = "admin";
-    private static final String usernameVariable = "uname";
     private static final String password = "";
     private static final String port = "1234";
     private static final String hostname = "localhost";
-    private static final String hostnameVariable = "hostname";
     private static final String adminPort = "4848";
-    private static final String adminPortVariable = "adminPort";
     private static final String variableStart = "${";
     private static final String variableEnd = "}";
     
     @Rule public JenkinsRule jenkinsRule = new JenkinsRule();
 
     @Before
-    public void setup() {
-        adapter = new GlassFish3xAdapter(home, password, username, port, null);
-        remoteAdapter = new GlassFish3xAdapter(null, password, username, adminPort, hostname);
+    public void setup() throws Exception {
+        UsernamePasswordCredentialsImpl c = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "test", "sample", username, password);
+        CredentialsProvider.lookupStores(jenkinsRule.jenkins).iterator().next().addCredentials(Domain.global(), c);
+
+        adapter = new GlassFish3xAdapter(home, c.getId(), port, null);
+        remoteAdapter = new GlassFish3xAdapter(null, c.getId(), adminPort, hostname);
+
     }
 
     @Test
@@ -66,10 +71,11 @@ public class GlassFish3xAdapterTest {
 
     @Test
     public void testConfigure() throws IOException, InterruptedException, ExecutionException {
-        Assert.assertEquals(adapter.home, home);
-    //    Assert.assertEquals(adapter.adminPort, port);
-        Assert.assertEquals(adapter.userName, username);
-        Assert.assertEquals(adapter.getPassword(), password);
+        Assert.assertEquals(home, adapter.home);
+        Assert.assertEquals(port, adapter.adminPort);
+        Assert.assertEquals(username, adapter.getUsername());
+        Assert.assertEquals(password, adapter.getPassword());
+        Assert.assertEquals(null, adapter.hostname);
 
         ConfigurationFactory configFactory = new DefaultConfigurationFactory();
         ContainerFactory containerFactory = new DefaultContainerFactory();
@@ -83,11 +89,11 @@ public class GlassFish3xAdapterTest {
 
     @Test
     public void testConfigureRemote() throws IOException, InterruptedException, ExecutionException {
-        Assert.assertNull("Expexted adapter.home to be null", remoteAdapter.home);
-   //     Assert.assertEquals(remoteAdapter.adminPort, adminPort);
-        Assert.assertEquals(remoteAdapter.userName, username);
-        Assert.assertEquals(remoteAdapter.getPassword(), password);
-        Assert.assertEquals(remoteAdapter.hostname, hostname);
+        Assert.assertEquals(null, remoteAdapter.home);
+        Assert.assertEquals(adminPort, remoteAdapter.adminPort);
+        Assert.assertEquals(username, remoteAdapter.getUsername());
+        Assert.assertEquals(password, remoteAdapter.getPassword());
+        Assert.assertEquals(null, adapter.hostname);
 
         ConfigurationFactory configFactory = new DefaultConfigurationFactory();
         ContainerFactory containerFactory = new DefaultContainerFactory();
@@ -115,36 +121,6 @@ public class GlassFish3xAdapterTest {
        
 
         remoteAdapter.redeploy(new FilePath(new File("src/test/simple.war")), "contextPath", null, null, new StreamBuildListener(System.out));
-    }
-    
-    @Test
-    public void testVariables() throws IOException, InterruptedException, ExecutionException {
-    	EnvironmentVariablesNodeProperty property = new EnvironmentVariablesNodeProperty();
-    	EnvVars envVars = property.getEnvVars();
-    	envVars.put(homeVariable, home);
-    	envVars.put(usernameVariable, username);
-    	envVars.put(adminPortVariable, adminPort);
-    	envVars.put(hostnameVariable, hostname);
-    	jenkinsRule.jenkins.getGlobalNodeProperties().add(property);
-
-        FreeStyleProject project = jenkinsRule.createFreeStyleProject();
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
-        BuildListener listener = new StreamBuildListener(new ByteArrayOutputStream());
-
-        adapter = new  GlassFish3xAdapter(getVariable(homeVariable), password, getVariable(usernameVariable), getVariable(adminPortVariable), null);
-        Configuration config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
-        adapter.configure(config, build.getEnvironment(listener), build.getBuildVariableResolver());
-        
-        Assert.assertEquals(username, config.getPropertyValue(RemotePropertySet.USERNAME));
-        Assert.assertEquals(adminPort, config.getPropertyValue(GlassFishPropertySet.ADMIN_PORT));
-        
-        remoteAdapter = new  GlassFish3xAdapter(null, password, getVariable(usernameVariable), getVariable(adminPortVariable), getVariable(hostnameVariable));
-        config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
-        remoteAdapter.configure(config, build.getEnvironment(listener), build.getBuildVariableResolver());
-        
-        Assert.assertEquals(username, config.getPropertyValue(RemotePropertySet.USERNAME));
-        Assert.assertEquals(adminPort, config.getPropertyValue(GlassFishPropertySet.ADMIN_PORT));
-        Assert.assertEquals(hostname, config.getPropertyValue(GeneralPropertySet.HOSTNAME));
     }
     
     private String getVariable(String variableName) {

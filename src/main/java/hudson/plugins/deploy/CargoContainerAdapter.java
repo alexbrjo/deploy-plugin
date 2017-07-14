@@ -2,7 +2,6 @@ package hudson.plugins.deploy;
 
 import hudson.EnvVars;
 import hudson.FilePath;
-import hudson.FilePath.FileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.BuildListener;
@@ -14,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
+import jenkins.MasterToSlaveFileCallable;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.cargo.container.Container;
@@ -110,7 +110,7 @@ public abstract class CargoContainerAdapter extends ContainerAdapter implements 
     }
 
     public boolean redeploy(FilePath war, final String contextPath, final AbstractBuild<?, ?> build, Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
-        return war.act(new FileCallable<Boolean>() {
+        return war.act(new MasterToSlaveFileCallable<Boolean>() {
             public Boolean invoke(File f, VirtualChannel channel) throws IOException {
                 if (!f.exists()) {
                     listener.error(Messages.DeployPublisher_NoSuchFile(f));

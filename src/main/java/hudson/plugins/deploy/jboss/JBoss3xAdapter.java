@@ -1,6 +1,7 @@
 package hudson.plugins.deploy.jboss;
 
 import hudson.Extension;
+import hudson.model.Run;
 import hudson.plugins.deploy.ContainerAdapterDescriptor;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -12,8 +13,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 public class JBoss3xAdapter extends JBossAdapter {
     @DataBoundConstructor
-    public JBoss3xAdapter(String url, String password, String userName) {
-        super(url, password, userName);
+    public JBoss3xAdapter(String url, String credentialsId) {
+        super(url, credentialsId);
     }
 
     @Override

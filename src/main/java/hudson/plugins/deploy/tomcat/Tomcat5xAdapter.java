@@ -1,6 +1,7 @@
 package hudson.plugins.deploy.tomcat;
 
 import hudson.Extension;
+import hudson.model.Run;
 import hudson.plugins.deploy.ContainerAdapterDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -12,8 +13,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class Tomcat5xAdapter extends TomcatAdapter {
 
     @DataBoundConstructor
-    public Tomcat5xAdapter(String url, String password, String userName) {
-        super(url, password, userName);
+    public Tomcat5xAdapter(String url, String credentialsId) {
+        super(url, credentialsId);
     }
 
     public String getContainerId() {

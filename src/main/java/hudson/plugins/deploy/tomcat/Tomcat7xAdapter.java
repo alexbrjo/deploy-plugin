@@ -2,6 +2,7 @@ package hudson.plugins.deploy.tomcat;
 
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.model.Run;
 import hudson.plugins.deploy.ContainerAdapterDescriptor;
 import hudson.util.VariableResolver;
 
@@ -27,8 +28,8 @@ public class Tomcat7xAdapter extends TomcatAdapter {
      * @param userName tomcat manager username
      */
     @DataBoundConstructor
-    public Tomcat7xAdapter(String url, String password, String userName) {
-        super(url, password, userName);
+    public Tomcat7xAdapter(String url, String credentialsId) {
+        super(url, credentialsId);
     }
 
     public void configure(Configuration config, EnvVars envVars, VariableResolver<String> resolver) {

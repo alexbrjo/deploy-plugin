@@ -1,6 +1,7 @@
 package hudson.plugins.deploy.jboss;
 
 import hudson.EnvVars;
+import hudson.model.Run;
 import hudson.plugins.deploy.PasswordProtectedAdapterCargo;
 import hudson.util.VariableResolver;
 
@@ -19,8 +20,8 @@ import org.codehaus.cargo.container.property.ServletPropertySet;
 public abstract class JBossAdapter extends PasswordProtectedAdapterCargo {
     public final String url;
 
-    protected JBossAdapter(String url, String password, String userName) {
-        super(userName, password);        
+    protected JBossAdapter(String url, String credentialsId) {
+        super(credentialsId);
         this.url = url;
     }
 

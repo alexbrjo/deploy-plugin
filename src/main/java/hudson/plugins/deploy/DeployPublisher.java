@@ -3,10 +3,7 @@ package hudson.plugins.deploy;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.BuildListener;
-import hudson.model.Result;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
+import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
@@ -51,9 +48,15 @@ public class DeployPublisher extends Notifier implements Serializable {
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         if (build.getResult().equals(Result.SUCCESS) || onFailure) {
             for (FilePath warFile : build.getWorkspace().list(this.war)) {
-                for (ContainerAdapter adapter : adapters)
-                    if (!adapter.redeploy(warFile, contextPath, build, launcher, listener))
+                for (ContainerAdapter adapter : adapters) {
+                    // protected containers need Job to do credential id lookup
+                    if (adapter instanceof PasswordProtectedAdapterCargo) {
+                        ((PasswordProtectedAdapterCargo) adapter).setJob(build.getParent());
+                    }
+                    if (!adapter.redeploy(warFile, contextPath, build, launcher, listener)) {
                         build.setResult(Result.FAILURE);
+                    }
+                }
             }
         }
 
