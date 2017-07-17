@@ -2,7 +2,6 @@ package hudson.plugins.deploy.tomcat;
 
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.model.Run;
 import hudson.plugins.deploy.ContainerAdapterDescriptor;
 import hudson.util.VariableResolver;
 

@@ -1,6 +1,5 @@
 package hudson.plugins.deploy.tomcat;
 
-import com.cloudbees.plugins.credentials.CredentialsMatcher;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.plugins.deploy.ContainerAdapterDescriptor;
@@ -12,7 +11,6 @@ import java.net.URL;
 import org.codehaus.cargo.container.configuration.Configuration;
 import org.codehaus.cargo.container.property.RemotePropertySet;
 import org.kohsuke.stapler.DataBoundConstructor;
-import com.cloudbees.plugins.credentials.Credentials;
 
 /**
  * Tomcat 8.x

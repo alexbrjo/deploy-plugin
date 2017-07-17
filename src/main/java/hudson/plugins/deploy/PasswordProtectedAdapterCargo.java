@@ -1,5 +1,6 @@
 package hudson.plugins.deploy;
 
+import hudson.Util;
 import hudson.model.Job;
 import hudson.util.Scrambler;
 import hudson.util.Secret;
@@ -12,7 +13,7 @@ import java.io.IOException;
 /**
  * Creates credentials for the previously stored password.
  *
- * Historical precedent of the multiple password field and why they should not be removed. Using
+ * Historical precedent of the multiple password fields and why they should not be removed. Using
  * {@link hudson.plugins.deploy.tomcat.Tomcat7xAdapter} as an example, but applies to all.
  *
  * v1.0     Stored password as plain text
@@ -29,7 +30,7 @@ import java.io.IOException;
  *          <code>
  *              <Tomcat7xAdapter>
  *                  <userName>admin</userName>
- *                  <passwordScrambled>password</passwordScrambled>
+ *                  <passwordScrambled>4mJs8f90=</passwordScrambled>
  *                  <url>http://example.com:8080</url>
  *              </Tomcat7xAdapter>
  *          </code>
@@ -39,7 +40,7 @@ import java.io.IOException;
  *          <code>
  *              <Tomcat7xAdapter>
  *                  <userName>admin</userName>
- *                  <passwordEncrypted>password</passwordEncrypted>
+ *                  <passwordEncrypted>4mJs8f90=</passwordEncrypted>
  *                  <url>http://example.com:8080</url>
  *              </Tomcat7xAdapter>
  *          </code>
@@ -64,7 +65,7 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
     private transient Job job;
 
     public PasswordProtectedAdapterCargo(String credentialsId) {
-        this.credentialsId = credentialsId;
+        this.credentialsId = Util.fixEmpty(credentialsId);
     }
 
     @Deprecated

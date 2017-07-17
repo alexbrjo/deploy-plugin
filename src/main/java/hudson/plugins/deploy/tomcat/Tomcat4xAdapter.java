@@ -1,7 +1,6 @@
 package hudson.plugins.deploy.tomcat;
 
 import hudson.Extension;
-import hudson.model.Run;
 import hudson.plugins.deploy.ContainerAdapterDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 

@@ -1,7 +1,6 @@
 package hudson.plugins.deploy.glassfish;
 
 import hudson.Extension;
-import hudson.model.Run;
 import hudson.plugins.deploy.ContainerAdapterDescriptor;
 
 import org.codehaus.cargo.container.glassfish.GlassFish3xStandaloneLocalConfiguration;

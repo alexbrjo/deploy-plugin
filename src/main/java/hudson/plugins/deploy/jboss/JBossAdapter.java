@@ -1,7 +1,6 @@
 package hudson.plugins.deploy.jboss;
 
 import hudson.EnvVars;
-import hudson.model.Run;
 import hudson.plugins.deploy.PasswordProtectedAdapterCargo;
 import hudson.util.VariableResolver;
 
@@ -11,7 +10,6 @@ import java.net.URL;
 import org.codehaus.cargo.container.configuration.Configuration;
 import org.codehaus.cargo.container.property.GeneralPropertySet;
 import org.codehaus.cargo.container.property.ServletPropertySet;
-import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Base class for JBoss adapters.

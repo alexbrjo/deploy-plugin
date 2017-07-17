@@ -3,7 +3,6 @@ package hudson.plugins.deploy.glassfish;
 import hudson.EnvVars;
 import hudson.plugins.deploy.PasswordProtectedAdapterCargo;
 import hudson.util.VariableResolver;
-import hudson.model.Run;
 
 import org.codehaus.cargo.container.Container;
 import org.codehaus.cargo.container.ContainerType;
