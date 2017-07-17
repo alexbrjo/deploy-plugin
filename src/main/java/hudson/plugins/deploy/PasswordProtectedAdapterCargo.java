@@ -4,7 +4,6 @@ import hudson.Util;
 import hudson.model.Job;
 import hudson.util.Scrambler;
 import hudson.util.Secret;
-import org.apache.log4j.Logger;
 import org.codehaus.cargo.container.property.RemotePropertySet;
 
 import javax.annotation.CheckForNull;
@@ -20,7 +19,7 @@ import java.io.IOException;
  *          <code>
  *              <Tomcat7xAdapter>
  *                  <userName>admin</userName>
- *                  <password>password</password>
+ *                  <password>pw</password>
  *                  <url>http://example.com:8080</url>
  *              </Tomcat7xAdapter>
  *          </code>
@@ -30,7 +29,7 @@ import java.io.IOException;
  *          <code>
  *              <Tomcat7xAdapter>
  *                  <userName>admin</userName>
- *                  <passwordScrambled>4mJs8f90=</passwordScrambled>
+ *                  <passwordScrambled>cHcNCg==</passwordScrambled>
  *                  <url>http://example.com:8080</url>
  *              </Tomcat7xAdapter>
  *          </code>
@@ -40,7 +39,7 @@ import java.io.IOException;
  *          <code>
  *              <Tomcat7xAdapter>
  *                  <userName>admin</userName>
- *                  <passwordEncrypted>4mJs8f90=</passwordEncrypted>
+ *                  <passwordEncrypted>Fa6HrHbN1cd2/MAJZvtTIA==</passwordEncrypted>
  *                  <url>http://example.com:8080</url>
  *              </Tomcat7xAdapter>
  *          </code>
@@ -105,7 +104,6 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
      */
     private Object readResolve() throws IOException {
         if (credentialsId == null) { // not converted to credentials
-            Logger.getLogger(PasswordProtectedAdapterCargo.class).warn("Please reconfigure deploy-plugin to use credentials");
             if (passwordEncrypted == null) { // not migrated to secure credential management
                 if (passwordScrambled != null) {
                     password = Scrambler.descramble(passwordScrambled);

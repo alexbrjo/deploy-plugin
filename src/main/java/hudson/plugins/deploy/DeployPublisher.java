@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -51,7 +52,13 @@ public class DeployPublisher extends Notifier implements Serializable {
                 for (ContainerAdapter adapter : adapters) {
                     // protected containers need Job to do credential id lookup
                     if (adapter instanceof PasswordProtectedAdapterCargo) {
-                        ((PasswordProtectedAdapterCargo) adapter).setJob(build.getParent());
+                        PasswordProtectedAdapterCargo ppac = (PasswordProtectedAdapterCargo) adapter;
+                        ppac.setJob(build.getParent());
+                        if (ppac.passwordEncrypted != null) {
+                            listener.getLogger().print(String.format("%n[DeployPublisher][WARN] YOUR " +
+                                    "PASSWORD IS POSSIBLY STORED INSECURELY ON DISK, PLEASE RECONFIGURE " +
+                                    "DEPLOY-PUBLISHER TO USE CREDENTIALS%n%n"));
+                        }
                     }
                     if (!adapter.redeploy(warFile, contextPath, build, launcher, listener)) {
                         build.setResult(Result.FAILURE);
