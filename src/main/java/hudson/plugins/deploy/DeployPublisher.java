@@ -3,10 +3,8 @@ package hudson.plugins.deploy;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.BuildListener;
-import hudson.model.Result;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
+import hudson.model.*;
+import hudson.model.listeners.ItemListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
@@ -19,6 +17,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import jenkins.model.Jenkins;
+import org.apache.log4j.Logger;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -120,4 +120,33 @@ public class DeployPublisher extends Notifier implements Serializable {
     }
 
     private static final long serialVersionUID = 1L;
+
+    @Extension
+    public static final class Migrator extends ItemListener {
+
+        @SuppressWarnings("deprecation")
+        @Override
+        public void onLoaded() {
+            for (AbstractProject<?,?> project : Jenkins.getActiveInstance().getAllItems(AbstractProject.class)) {
+                try {
+                    DeployPublisher d = project.getPublishersList().get(DeployPublisher.class);
+                    for (ContainerAdapter a : d.getAdapters()) {
+                        if (a instanceof PasswordProtectedAdapterCargo) {
+                            /* if password or passwordScrambled was loaded from disk, the password field will contain
+                            the plain text password after readResolve */
+                            if (((PasswordProtectedAdapterCargo) a).password != null) {
+                                project.save();
+                                Logger.getLogger(DeployPublisher.class).info(
+                                        String.format("Successfully migrated DeployPublisher in project: %s", project.getName()));
+                                break;
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    Logger.getLogger(DeployPublisher.class).warn("Migration unsuccessful");
+                }
+            }
+        }
+    }
+
 }
