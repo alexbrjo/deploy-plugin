@@ -1,10 +1,12 @@
 package hudson.plugins.deploy;
 
 import hudson.Util;
+import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.util.Scrambler;
 import hudson.util.Secret;
 import org.codehaus.cargo.container.property.RemotePropertySet;
+import org.kohsuke.stapler.DataBoundSetter;
 
 import javax.annotation.CheckForNull;
 import java.io.IOException;
@@ -56,8 +58,6 @@ import java.io.IOException;
 public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContainerAdapterImpl {
     @Deprecated // backward compatibility
     public String userName, password, passwordScrambled, passwordEncrypted;
-    @Deprecated
-    public transient Secret secret;
 
     private String credentialsId;
     @CheckForNull
@@ -70,7 +70,7 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
     @Deprecated
     public PasswordProtectedAdapterCargo(String userName, String password) {
         this.userName = userName;
-        this.secret = Secret.fromString(password);
+        setPasswordDecrypted(password);
     }
 
     // lookupCredentials requires a Job
@@ -93,7 +93,7 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
     @Property(RemotePropertySet.PASSWORD)
     public String getPassword() {
         if (credentialsId == null) {
-            return secret.getPlainText();
+            return getPasswordDecrypted();
         }
         return ContainerAdapterDescriptor.lookupCredentials(job, credentialsId).getPassword().getPlainText();
     }
@@ -102,22 +102,40 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
      * Makes sure either secret or credentials are being used. Converts passwordEncrypted to secret
      * @return the resolved object
      */
-    private Object readResolve() throws IOException {
+    private Object readResolve() {
         if (credentialsId == null) { // not converted to credentials
             if (passwordEncrypted == null) { // not migrated to secure credential management
                 if (passwordScrambled != null) {
                     password = Scrambler.descramble(passwordScrambled);
                 }
-                secret = Secret.fromString(password);
-                passwordEncrypted = secret.getEncryptedValue();
+                passwordEncrypted = Secret.fromString(password).getEncryptedValue();
             }
-        } else {
-            // credentials are being used so make sure no other fields are being serialized
+        }
+        return this;
+    }
+
+    private Object writeReplace () {
+        if (credentialsId != null) {
             userName = null;
             passwordEncrypted = null;
         }
         password = null;
         passwordScrambled = null;
         return this;
+    }
+
+    // following 3 methods are need for backwards compatible Jelly
+    @DataBoundSetter
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    @DataBoundSetter
+    public void setPasswordDecrypted(String passwordDecrypted) {
+        this.passwordEncrypted = Secret.fromString(passwordDecrypted).getEncryptedValue();
+    }
+
+    public String getPasswordDecrypted() {
+        return Secret.decrypt(passwordEncrypted).getPlainText();
     }
 }
