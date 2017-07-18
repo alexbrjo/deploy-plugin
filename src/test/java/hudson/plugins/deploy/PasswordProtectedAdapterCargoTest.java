@@ -1,15 +1,10 @@
 package hudson.plugins.deploy;
 
-import hudson.model.FreeStyleProject;
-import hudson.tasks.Publisher;
 import hudson.util.Scrambler;
 import hudson.util.XStream2;
-import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.File;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

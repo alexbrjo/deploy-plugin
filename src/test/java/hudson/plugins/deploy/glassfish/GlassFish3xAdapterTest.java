@@ -138,7 +138,7 @@ public class GlassFish3xAdapterTest {
     	envVars.put(hostnameVariable, hostname);
     	jenkinsRule.jenkins.getGlobalNodeProperties().add(property);
 
-        FreeStyleProject project = jenkinsRule.getInstance().createProject(FreeStyleProject.class, "fsp");
+        FreeStyleProject project = jenkinsRule.createFreeStyleProject();
         project.setAssignedNode(n);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         BuildListener listener = new StreamBuildListener(new ByteArrayOutputStream());

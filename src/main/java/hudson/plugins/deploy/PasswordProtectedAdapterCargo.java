@@ -1,7 +1,6 @@
 package hudson.plugins.deploy;
 
 import hudson.Util;
-import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.util.Scrambler;
 import hudson.util.Secret;
@@ -9,7 +8,6 @@ import org.codehaus.cargo.container.property.RemotePropertySet;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import javax.annotation.CheckForNull;
-import java.io.IOException;
 
 /**
  * Creates credentials for the previously stored password.

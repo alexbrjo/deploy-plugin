@@ -3,7 +3,6 @@ package hudson.plugins.deploy.tomcat;
 import hudson.EnvVars;
 import hudson.plugins.deploy.PasswordProtectedAdapterCargo;
 import hudson.util.VariableResolver;
-import hudson.model.Run;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -13,7 +12,6 @@ import org.codehaus.cargo.container.configuration.Configuration;
 import org.codehaus.cargo.container.deployable.WAR;
 import org.codehaus.cargo.container.property.RemotePropertySet;
 import org.codehaus.cargo.container.tomcat.TomcatWAR;
-import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Base class for Tomcat adapters.
