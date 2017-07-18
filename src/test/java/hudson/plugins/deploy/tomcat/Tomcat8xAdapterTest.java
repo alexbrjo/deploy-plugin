@@ -9,6 +9,7 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.StreamBuildListener;
 import hudson.model.FreeStyleProject;
+import hudson.model.Node;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 
 import java.io.ByteArrayOutputStream;
@@ -62,6 +63,28 @@ public class Tomcat8xAdapterTest {
         Assert.assertEquals(url, adapter.url);
         Assert.assertEquals(username, adapter.getUsername());
         Assert.assertEquals(password, adapter.getPassword());
+    }
+
+    @Test
+    public void testVariables() throws Exception {
+        Node n = jenkinsRule.createSlave();
+    	EnvironmentVariablesNodeProperty property = new EnvironmentVariablesNodeProperty();
+    	EnvVars envVars = property.getEnvVars();
+    	envVars.put(urlVariable, url);
+    	envVars.put(usernameVariable, username);
+    	jenkinsRule.jenkins.getGlobalNodeProperties().add(property);
+
+        FreeStyleProject project = jenkinsRule.getInstance().createProject(FreeStyleProject.class, "fsp");
+        project.setAssignedNode(n);
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        BuildListener listener = new StreamBuildListener(new ByteArrayOutputStream());
+
+        adapter = new  Tomcat8xAdapter(getVariable(urlVariable), password, getVariable(usernameVariable));
+        Configuration config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
+        adapter.configure(config, project.getEnvironment(n, listener), build.getBuildVariableResolver());
+
+        Assert.assertEquals(configuredUrl, config.getPropertyValue(RemotePropertySet.URI));
+        Assert.assertEquals(username, config.getPropertyValue(RemotePropertySet.USERNAME));
     }
     
     private String getVariable(String variableName) {

@@ -11,13 +11,13 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class GlassFish2xAdapter extends GlassFishAdapter {
 
     @DataBoundConstructor
-    public GlassFish2xAdapter(String home, String credentialsId, String adminPort, String hostname) {
-        super(home, credentialsId, adminPort, hostname);
+    public GlassFish2xAdapter(String home, String credentialsId, String adminPort) {
+        super(home, credentialsId, adminPort, null);
     }
 
     @Deprecated
-    public GlassFish2xAdapter(String home, String userName, String password, String adminPort, String hostname) {
-        super(home, userName, password, adminPort, hostname);
+    public GlassFish2xAdapter(String home, String password, String userName, String adminPort) {
+        super(home, password, userName, adminPort, null);
     }
 
     @Override

@@ -13,8 +13,8 @@ public class JBoss6xAdapter extends JBossAdapter {
     }
 
     @Deprecated
-    public JBoss6xAdapter(String url, String userName, String password) {
-        super(url, userName, password);
+    public JBoss6xAdapter(String url, String password, String userName) {
+        super(url, password, userName);
     }
 
     @Override

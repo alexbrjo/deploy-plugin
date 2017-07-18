@@ -10,7 +10,7 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.StreamBuildListener;
 import hudson.model.FreeStyleProject;
-import hudson.plugins.deploy.tomcat.Tomcat7xAdapter;
+import hudson.model.Node;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 
 import java.io.ByteArrayOutputStream;
@@ -44,11 +44,15 @@ public class GlassFish3xAdapterTest {
     private GlassFish3xAdapter adapter;
     private GlassFish3xAdapter remoteAdapter;
     private static final String home = "D:/development/server/glassfishv3";
+    private static final String homeVariable = "home";
     private static final String username = "admin";
+    private static final String usernameVariable = "uname";
     private static final String password = "";
     private static final String port = "1234";
     private static final String hostname = "localhost";
+    private static final String hostnameVariable = "hostname";
     private static final String adminPort = "4848";
+    private static final String adminPortVariable = "adminPort";
     private static final String variableStart = "${";
     private static final String variableEnd = "}";
     
@@ -123,6 +127,38 @@ public class GlassFish3xAdapterTest {
         remoteAdapter.redeploy(new FilePath(new File("src/test/simple.war")), "contextPath", null, null, new StreamBuildListener(System.out));
     }
     
+    @Test
+    public void testVariables() throws Exception {
+        Node n = jenkinsRule.createSlave();
+    	EnvironmentVariablesNodeProperty property = new EnvironmentVariablesNodeProperty();
+    	EnvVars envVars = property.getEnvVars();
+    	envVars.put(homeVariable, home);
+    	envVars.put(usernameVariable, username);
+    	envVars.put(adminPortVariable, adminPort);
+    	envVars.put(hostnameVariable, hostname);
+    	jenkinsRule.jenkins.getGlobalNodeProperties().add(property);
+
+        FreeStyleProject project = jenkinsRule.getInstance().createProject(FreeStyleProject.class, "fsp");
+        project.setAssignedNode(n);
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        BuildListener listener = new StreamBuildListener(new ByteArrayOutputStream());
+
+        adapter = new  GlassFish3xAdapter(getVariable(homeVariable), password, getVariable(usernameVariable), getVariable(adminPortVariable), null);
+        Configuration config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
+        adapter.configure(config, project.getEnvironment(n, listener), build.getBuildVariableResolver());
+
+        Assert.assertEquals(username, config.getPropertyValue(RemotePropertySet.USERNAME));
+        Assert.assertEquals(adminPort, config.getPropertyValue(GlassFishPropertySet.ADMIN_PORT));
+
+        remoteAdapter = new  GlassFish3xAdapter(null, password, getVariable(usernameVariable), getVariable(adminPortVariable), getVariable(hostnameVariable));
+        config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
+        remoteAdapter.configure(config, project.getEnvironment(n, listener), build.getBuildVariableResolver());
+
+        Assert.assertEquals(username, config.getPropertyValue(RemotePropertySet.USERNAME));
+        Assert.assertEquals(adminPort, config.getPropertyValue(GlassFishPropertySet.ADMIN_PORT));
+        Assert.assertEquals(hostname, config.getPropertyValue(GeneralPropertySet.HOSTNAME));
+    }
+
     private String getVariable(String variableName) {
     	return variableStart + variableName + variableEnd;
     }

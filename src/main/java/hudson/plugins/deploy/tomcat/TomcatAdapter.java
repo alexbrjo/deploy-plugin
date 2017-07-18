@@ -32,7 +32,7 @@ public abstract class TomcatAdapter extends PasswordProtectedAdapterCargo {
     }
 
     @Deprecated
-    public TomcatAdapter(String url, String userName, String password) {
+    public TomcatAdapter(String url, String password, String userName) {
         super(userName, password);
         this.url = url;
     }

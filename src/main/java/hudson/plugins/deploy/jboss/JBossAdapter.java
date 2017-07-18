@@ -25,7 +25,7 @@ public abstract class JBossAdapter extends PasswordProtectedAdapterCargo {
     }
 
     @Deprecated
-    protected JBossAdapter(String url, String userName, String password) {
+    protected JBossAdapter(String url, String password, String userName) {
         super(userName, password);
         this.url = url;
     }

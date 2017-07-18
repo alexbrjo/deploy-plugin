@@ -44,7 +44,7 @@ public class GlassFish2xAdapterTest {
         UsernamePasswordCredentialsImpl c = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "test", "sample", username, password);
         CredentialsProvider.lookupStores(jenkinsRule.jenkins).iterator().next().addCredentials(Domain.global(), c);
 
-        adapter = new GlassFish2xAdapter(home, c.getId(), port, null);
+        adapter = new GlassFish2xAdapter(home, c.getId(), port);
     }
 
     @Test

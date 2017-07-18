@@ -27,8 +27,8 @@ public class GlassFish3xAdapter extends GlassFishAdapter {
     }
 
     @Deprecated
-    public GlassFish3xAdapter(String home, String userName, String password, String adminPort, String hostname) {
-        super(home, userName, password, adminPort, hostname);
+    public GlassFish3xAdapter(String home, String password, String userName, String adminPort, String hostname) {
+        super(home, password, userName, adminPort, hostname);
     }
 
     /**

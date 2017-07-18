@@ -17,8 +17,8 @@ public class Tomcat6xAdapter extends TomcatAdapter {
     }
 
     @Deprecated
-    public Tomcat6xAdapter(String url, String userName, String password) {
-        super(url, userName, password);
+    public Tomcat6xAdapter(String url, String password, String userName) {
+        super(url, password, userName);
     }
 
     public String getContainerId() {
