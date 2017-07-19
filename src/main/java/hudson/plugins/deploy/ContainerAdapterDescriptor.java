@@ -24,6 +24,8 @@ import javax.servlet.ServletException;
 import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -46,6 +48,7 @@ public abstract class ContainerAdapterDescriptor extends Descriptor<ContainerAda
                 CredentialsMatchers.withId(credentialId));
     }
 
+    @Restricted(NoExternalUse.class)
     public ListBoxModel doFillCredentialsIdItems(@AncestorInPath Item project,
                                                  @QueryParameter String url,
                                                  @QueryParameter String credentialsId) {

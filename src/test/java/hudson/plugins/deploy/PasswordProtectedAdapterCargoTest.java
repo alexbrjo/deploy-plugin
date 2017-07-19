@@ -20,7 +20,7 @@ public class PasswordProtectedAdapterCargoTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void testDeserializeOldPlainPassword () {
+    public void testDeserializeOldPlainPassword () throws Exception {
         String username = "manager";
         String password = "lighthouse";
         String oldXml = "<hudson.plugins.deploy.glassfish.GlassFish3xAdapter><userName>" + username + "</userName><password>"
@@ -28,6 +28,7 @@ public class PasswordProtectedAdapterCargoTest {
         XStream2 xs = new XStream2();
 
         PasswordProtectedAdapterCargo adapter = (PasswordProtectedAdapterCargo)xs.fromXML(oldXml);
+        adapter.migrateCredentials();
 
         // adapter returns correct username and password
         assertEquals(username, adapter.getUsername());
@@ -35,7 +36,7 @@ public class PasswordProtectedAdapterCargoTest {
     }
 
     @Test
-    public void testDeserializeOldScrambledPassword () {
+    public void testDeserializeOldScrambledPassword () throws Exception {
         String username = "manager";
         String password = "lighthouse";
         String scrambledPassword = Scrambler.scramble(password);
@@ -44,6 +45,7 @@ public class PasswordProtectedAdapterCargoTest {
         XStream2 xs = new XStream2();
 
         PasswordProtectedAdapterCargo adapter = (PasswordProtectedAdapterCargo)xs.fromXML(oldXml);
+        adapter.migrateCredentials();
 
         // adapter returns correct username and password
         assertEquals(username, adapter.getUsername());
@@ -51,7 +53,7 @@ public class PasswordProtectedAdapterCargoTest {
     }
 
     @Test
-    public void testMigrateOldPlainPasswordToSecret () {
+    public void testMigrateOldPlainPasswordToSecret () throws Exception {
         String username = "manager";
         String password = "lighthouse";
         String scrambledPassword = Scrambler.scramble(password);
@@ -59,18 +61,20 @@ public class PasswordProtectedAdapterCargoTest {
                 + password + "</password><home>/</home><hostname></hostname></hudson.plugins.deploy.glassfish.GlassFish3xAdapter>";
         XStream2 xs = new XStream2();
 
-        String newXml = xs.toXML(xs.fromXML(oldXml)); // deserialize and serialize
+        PasswordProtectedAdapterCargo adapter = (PasswordProtectedAdapterCargo)xs.fromXML(oldXml);
+        adapter.migrateCredentials();
+        String newXml = xs.toXML(adapter);
 
-        assertEquals("<hudson.plugins.deploy.glassfish.GlassFish3xAdapter>\n  <userName>manager</userName>\n  <passwordEncrypted>",
-                newXml.substring(0, 105));
+        assertEquals("<hudson.plugins.deploy.glassfish.GlassFish3xAdapter>\n  <credentialsId>",
+                newXml.substring(0, 70));
         assertFalse(newXml.contains(password)); // doesn't have plaintext password
         assertFalse(newXml.contains(scrambledPassword)); // doesn't have base64 pass
-        assertEquals("</passwordEncrypted>\n  <home>/</home>\n  <hostname></hostname>\n</hudson.plugins.deploy.glassfish.GlassFish3xAdapter>",
-                newXml.substring(newXml.length() - 115, newXml.length()));
+        assertEquals("</credentialsId>\n  <home>/</home>\n  <hostname></hostname>\n</hudson.plugins.deploy.glassfish.GlassFish3xAdapter>",
+                newXml.substring(newXml.length() - 111, newXml.length()));
     }
 
     @Test
-    public void testMigrateOldScrambledPasswordToSecret () {
+    public void testMigrateOldScrambledPasswordToSecret () throws Exception {
         String username = "manager";
         String password = "lighthouse";
         String scrambledPassword = Scrambler.scramble(password);
@@ -78,13 +82,15 @@ public class PasswordProtectedAdapterCargoTest {
                 + scrambledPassword + "</passwordScrambled><home>/</home><hostname></hostname></hudson.plugins.deploy.glassfish.GlassFish3xAdapter>";
         XStream2 xs = new XStream2();
 
-        String newXml = xs.toXML(xs.fromXML(oldXml)); // deserialize and serialize
+        PasswordProtectedAdapterCargo adapter = (PasswordProtectedAdapterCargo)xs.fromXML(oldXml);
+        adapter.migrateCredentials();
+        String newXml = xs.toXML(adapter);
 
-        assertEquals("<hudson.plugins.deploy.glassfish.GlassFish3xAdapter>\n  <userName>manager</userName>\n  <passwordEncrypted>",
-                newXml.substring(0, 105));
+        assertEquals("<hudson.plugins.deploy.glassfish.GlassFish3xAdapter>\n  <credentialsId>",
+                newXml.substring(0, 70));
         assertFalse(newXml.contains(password)); // doesn't have plaintext password
         assertFalse(newXml.contains(scrambledPassword)); // doesn't have base64 pass
-        assertEquals("</passwordEncrypted>\n  <home>/</home>\n  <hostname></hostname>\n</hudson.plugins.deploy.glassfish.GlassFish3xAdapter>",
-                newXml.substring(newXml.length() - 115, newXml.length()));
+        assertEquals("</credentialsId>\n  <home>/</home>\n  <hostname></hostname>\n</hudson.plugins.deploy.glassfish.GlassFish3xAdapter>",
+                newXml.substring(newXml.length() - 111, newXml.length()));
     }
 }

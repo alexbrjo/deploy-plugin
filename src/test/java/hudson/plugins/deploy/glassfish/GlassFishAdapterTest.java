@@ -1,10 +1,5 @@
 package hudson.plugins.deploy.glassfish;
 
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.CredentialsScope;
-import com.cloudbees.plugins.credentials.domains.Domain;
-import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
-import hudson.plugins.deploy.tomcat.Tomcat7xAdapter;
 import org.codehaus.cargo.container.ContainerType;
 import org.codehaus.cargo.container.configuration.Configuration;
 import org.codehaus.cargo.container.configuration.ConfigurationType;
@@ -12,7 +7,9 @@ import org.codehaus.cargo.generic.configuration.ConfigurationFactory;
 import org.codehaus.cargo.generic.configuration.DefaultConfigurationFactory;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author soudmaijer
@@ -22,6 +19,9 @@ public class GlassFishAdapterTest {
     private GlassFish3xAdapter glassFish3xAdapter;
     private static final String home = "/dev/null";
     private static final String port = "1234";
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
 
     @Before
     public void setup() {

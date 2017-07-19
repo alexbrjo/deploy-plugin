@@ -1,13 +1,18 @@
 package hudson.plugins.deploy;
 
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.CredentialsScope;
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
+import com.cloudbees.plugins.credentials.domains.Domain;
+import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 import hudson.Util;
 import hudson.model.Job;
 import hudson.util.Scrambler;
-import hudson.util.Secret;
+import jenkins.model.Jenkins;
 import org.codehaus.cargo.container.property.RemotePropertySet;
-import org.kohsuke.stapler.DataBoundSetter;
 
 import javax.annotation.CheckForNull;
+import java.io.IOException;
 
 /**
  * Creates credentials for the previously stored password.
@@ -35,14 +40,7 @@ import javax.annotation.CheckForNull;
  *          </code>
  *
  * v1.11    Full support of credentials. To be backwards compatible and not break builds converts old configurations
- *          from password or passwordScrambled to passwordEncrypted via {@link hudson.util.Secret}.
- *          <code>
- *              <Tomcat7xAdapter>
- *                  <userName>admin</userName>
- *                  <passwordEncrypted>Fa6HrHbN1cd2/MAJZvtTIA==</passwordEncrypted>
- *                  <url>http://example.com:8080</url>
- *              </Tomcat7xAdapter>
- *          </code>
+ *          from password or passwordScrambled to credentials.
  *          <code>
  *              <Tomcat7xAdapter>
  *                  <credentialsId>aDjnKd4j-s66fnF53-2dmAS7PkqD4</credentialsId>
@@ -55,25 +53,27 @@ import javax.annotation.CheckForNull;
  */
 public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContainerAdapterImpl {
     @Deprecated // backward compatibility
-    public String userName, password, passwordScrambled, passwordEncrypted;
+    public String userName, password, passwordScrambled;
 
+    @CheckForNull
     private String credentialsId;
     @CheckForNull
-    private transient Job job;
+    private transient StandardUsernamePasswordCredentials credentials;
 
     public PasswordProtectedAdapterCargo(String credentialsId) {
         this.credentialsId = Util.fixEmpty(credentialsId);
+        credentials = ContainerAdapterDescriptor.lookupCredentials(null, credentialsId);
     }
 
     @Deprecated
     public PasswordProtectedAdapterCargo(String userName, String password) {
         this.userName = userName;
-        setPasswordDecrypted(password);
+        this.password = password;
     }
 
-    // lookupCredentials requires a Job
-    public void setJob (Job job) {
-        this.job = job;
+    public void trackCredentials(Job job) {
+        credentials = ContainerAdapterDescriptor.lookupCredentials(job, credentialsId);
+        CredentialsProvider.track(job, credentials);
     }
 
     public String getCredentialsId() {
@@ -82,58 +82,31 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
 
     @Property(RemotePropertySet.USERNAME)
     public String getUsername() {
-        if (credentialsId == null) {
-            return userName;
-        }
-        return ContainerAdapterDescriptor.lookupCredentials(job, credentialsId).getUsername();
+        return credentials.getUsername();
     }
 
     @Property(RemotePropertySet.PASSWORD)
     public String getPassword() {
-        if (credentialsId == null) {
-            return getPasswordDecrypted();
-        }
-        return ContainerAdapterDescriptor.lookupCredentials(job, credentialsId).getPassword().getPlainText();
+        return credentials.getPassword().getPlainText();
     }
 
     /**
-     * Makes sure either secret or credentials are being used. Converts passwordEncrypted to secret
-     * @return the resolved object
+     * Migrates to credentials.
      */
-    private Object readResolve() {
-        if (credentialsId == null) { // not converted to credentials
-            if (passwordEncrypted == null) { // not migrated to secure credential management
-                if (passwordScrambled != null) {
-                    password = Scrambler.descramble(passwordScrambled);
-                }
-                passwordEncrypted = Secret.fromString(password).getEncryptedValue();
+    public void migrateCredentials() throws IOException {
+        if (credentialsId == null) {
+            if (passwordScrambled != null) {
+                password = Scrambler.descramble(passwordScrambled);
             }
-        }
-        return this;
-    }
 
-    private Object writeReplace () {
-        if (credentialsId != null) {
+            credentials = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,
+                    null, "Deploy credentials for " + getContainerId(), userName, password);
+            CredentialsProvider.lookupStores(Jenkins.getInstance()).iterator().next().addCredentials(Domain.global(), credentials);
+
+            credentialsId = credentials.getId();
             userName = null;
-            passwordEncrypted = null;
+            password = null;
+            passwordScrambled = null;
         }
-        password = null;
-        passwordScrambled = null;
-        return this;
-    }
-
-    // following 3 methods are need for backwards compatible Jelly
-    @DataBoundSetter
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    @DataBoundSetter
-    public void setPasswordDecrypted(String passwordDecrypted) {
-        this.passwordEncrypted = Secret.fromString(passwordDecrypted).getEncryptedValue();
-    }
-
-    public String getPasswordDecrypted() {
-        return Secret.decrypt(passwordEncrypted).getPlainText();
     }
 }

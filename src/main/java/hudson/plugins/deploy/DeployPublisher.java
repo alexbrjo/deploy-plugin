@@ -3,7 +3,10 @@ package hudson.plugins.deploy;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.*;
+import hudson.model.BuildListener;
+import hudson.model.Result;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.listeners.ItemListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
@@ -16,9 +19,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Logger;
 
 import jenkins.model.Jenkins;
-import org.apache.log4j.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -52,15 +57,9 @@ public class DeployPublisher extends Notifier implements Serializable {
         if (build.getResult().equals(Result.SUCCESS) || onFailure) {
             for (FilePath warFile : build.getWorkspace().list(this.war)) {
                 for (ContainerAdapter adapter : adapters) {
-                    // protected containers need Job to do credential id lookup
                     if (adapter instanceof PasswordProtectedAdapterCargo) {
-                        PasswordProtectedAdapterCargo ppac = (PasswordProtectedAdapterCargo) adapter;
-                        ppac.setJob(build.getParent());
-                        if (ppac.passwordEncrypted != null) {
-                            listener.getLogger().print(String.format("%n[DeployPublisher][WARN] YOUR " +
-                                    "PASSWORD IS POSSIBLY STORED INSECURELY ON DISK, PLEASE RECONFIGURE " +
-                                    "DEPLOY-PUBLISHER TO USE CREDENTIALS%n%n"));
-                        }
+                        // protected containers need Job to do credentialId lookup and usage tracking
+                        ((PasswordProtectedAdapterCargo) adapter).trackCredentials(build.getParent());
                     }
                     if (!adapter.redeploy(warFile, contextPath, build, launcher, listener)) {
                         build.setResult(Result.FAILURE);
@@ -121,6 +120,7 @@ public class DeployPublisher extends Notifier implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @Restricted(NoExternalUse.class)
     @Extension
     public static final class Migrator extends ItemListener {
 
@@ -130,20 +130,23 @@ public class DeployPublisher extends Notifier implements Serializable {
             for (AbstractProject<?,?> project : Jenkins.getActiveInstance().getAllItems(AbstractProject.class)) {
                 try {
                     DeployPublisher d = project.getPublishersList().get(DeployPublisher.class);
+                    boolean modified = false;
                     for (ContainerAdapter a : d.getAdapters()) {
                         if (a instanceof PasswordProtectedAdapterCargo) {
-                            /* if password or passwordScrambled was loaded from disk, the password field will contain
-                            the plain text password after readResolve */
-                            if (((PasswordProtectedAdapterCargo) a).password != null) {
-                                project.save();
-                                Logger.getLogger(DeployPublisher.class).info(
-                                        String.format("Successfully migrated DeployPublisher in project: %s", project.getName()));
-                                break;
+                            PasswordProtectedAdapterCargo ppac = (PasswordProtectedAdapterCargo) a;
+                            if (ppac.getCredentialsId() == null) {
+                                ppac.migrateCredentials();
+                                modified = true;
                             }
                         }
                     }
+                    if (modified) {
+                        Logger.getLogger(DeployPublisher.class.getName()).info(
+                                String.format("Successfully migrated DeployPublisher in project: %s", project.getName()));
+                        project.save();
+                    }
                 } catch (IOException e) {
-                    Logger.getLogger(DeployPublisher.class).warn("Migration unsuccessful");
+                    Logger.getLogger(DeployPublisher.class.getName()).warning("Migration unsuccessful");
                 }
             }
         }

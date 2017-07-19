@@ -63,7 +63,7 @@ public class GlassFish2xAdapterTest {
         ContainerFactory containerFactory = new DefaultContainerFactory();
 
         FreeStyleProject project = jenkinsRule.createFreeStyleProject();
-        adapter.setJob(project); // DeployPublisher would do this
+        adapter.trackCredentials(project); // DeployPublisher would do this
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         BuildListener listener = new StreamBuildListener(new ByteArrayOutputStream());
 

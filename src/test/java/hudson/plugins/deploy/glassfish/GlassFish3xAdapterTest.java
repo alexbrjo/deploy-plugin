@@ -145,6 +145,8 @@ public class GlassFish3xAdapterTest {
 
         adapter = new  GlassFish3xAdapter(getVariable(homeVariable), password, getVariable(usernameVariable), getVariable(adminPortVariable), null);
         Configuration config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
+        adapter.migrateCredentials();
+        adapter.trackCredentials(project);
         adapter.configure(config, project.getEnvironment(n, listener), build.getBuildVariableResolver());
 
         Assert.assertEquals(username, config.getPropertyValue(RemotePropertySet.USERNAME));
@@ -152,6 +154,8 @@ public class GlassFish3xAdapterTest {
 
         remoteAdapter = new  GlassFish3xAdapter(null, password, getVariable(usernameVariable), getVariable(adminPortVariable), getVariable(hostnameVariable));
         config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
+        remoteAdapter.migrateCredentials();
+        remoteAdapter.trackCredentials(project);
         remoteAdapter.configure(config, project.getEnvironment(n, listener), build.getBuildVariableResolver());
 
         Assert.assertEquals(username, config.getPropertyValue(RemotePropertySet.USERNAME));
