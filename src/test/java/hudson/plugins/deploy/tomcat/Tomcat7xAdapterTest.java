@@ -49,6 +49,7 @@ public class Tomcat7xAdapterTest {
         CredentialsProvider.lookupStores(jenkinsRule.jenkins).iterator().next().addCredentials(Domain.global(), c);
 
         adapter = new  Tomcat7xAdapter(url, c.getId());
+        adapter.loadCredentials(/* temp project to avoid npe */ jenkinsRule.createFreeStyleProject());
     }
 
     @Test
@@ -80,7 +81,7 @@ public class Tomcat7xAdapterTest {
         adapter = new  Tomcat7xAdapter(getVariable(urlVariable), password, getVariable(usernameVariable));
         Configuration config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
         adapter.migrateCredentials();
-        adapter.trackCredentials(project);
+        adapter.loadCredentials(project);
         adapter.configure(config, project.getEnvironment(n, listener), build.getBuildVariableResolver());
 
         Assert.assertEquals(configuredUrl, config.getPropertyValue(RemotePropertySet.URI));

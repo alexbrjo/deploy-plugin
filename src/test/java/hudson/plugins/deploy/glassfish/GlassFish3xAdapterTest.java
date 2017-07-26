@@ -64,8 +64,9 @@ public class GlassFish3xAdapterTest {
         CredentialsProvider.lookupStores(jenkinsRule.jenkins).iterator().next().addCredentials(Domain.global(), c);
 
         adapter = new GlassFish3xAdapter(home, c.getId(), port, null);
+        adapter.loadCredentials(/* temp project to avoid npe */ jenkinsRule.createFreeStyleProject());
         remoteAdapter = new GlassFish3xAdapter(null, c.getId(), adminPort, hostname);
-
+        remoteAdapter.loadCredentials(/* temp project to avoid npe */ jenkinsRule.createFreeStyleProject());
     }
 
     @Test
@@ -146,7 +147,7 @@ public class GlassFish3xAdapterTest {
         adapter = new  GlassFish3xAdapter(getVariable(homeVariable), password, getVariable(usernameVariable), getVariable(adminPortVariable), null);
         Configuration config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
         adapter.migrateCredentials();
-        adapter.trackCredentials(project);
+        adapter.loadCredentials(project);
         adapter.configure(config, project.getEnvironment(n, listener), build.getBuildVariableResolver());
 
         Assert.assertEquals(username, config.getPropertyValue(RemotePropertySet.USERNAME));
@@ -155,7 +156,7 @@ public class GlassFish3xAdapterTest {
         remoteAdapter = new  GlassFish3xAdapter(null, password, getVariable(usernameVariable), getVariable(adminPortVariable), getVariable(hostnameVariable));
         config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
         remoteAdapter.migrateCredentials();
-        remoteAdapter.trackCredentials(project);
+        remoteAdapter.loadCredentials(project);
         remoteAdapter.configure(config, project.getEnvironment(n, listener), build.getBuildVariableResolver());
 
         Assert.assertEquals(username, config.getPropertyValue(RemotePropertySet.USERNAME));

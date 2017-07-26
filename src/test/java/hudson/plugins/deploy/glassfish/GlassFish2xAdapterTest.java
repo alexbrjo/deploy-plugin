@@ -45,6 +45,7 @@ public class GlassFish2xAdapterTest {
         CredentialsProvider.lookupStores(jenkinsRule.jenkins).iterator().next().addCredentials(Domain.global(), c);
 
         adapter = new GlassFish2xAdapter(home, c.getId(), port);
+        adapter.loadCredentials(/* temp project to avoid npe */ jenkinsRule.createFreeStyleProject());
     }
 
     @Test
@@ -63,7 +64,7 @@ public class GlassFish2xAdapterTest {
         ContainerFactory containerFactory = new DefaultContainerFactory();
 
         FreeStyleProject project = jenkinsRule.createFreeStyleProject();
-        adapter.trackCredentials(project); // DeployPublisher would do this
+        adapter.loadCredentials(project); // DeployPublisher would do this
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         BuildListener listener = new StreamBuildListener(new ByteArrayOutputStream());
 

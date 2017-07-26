@@ -10,9 +10,12 @@ import hudson.model.Job;
 import hudson.util.Scrambler;
 import jenkins.model.Jenkins;
 import org.codehaus.cargo.container.property.RemotePropertySet;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.CheckForNull;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Creates credentials for the previously stored password.
@@ -21,39 +24,39 @@ import java.io.IOException;
  * {@link hudson.plugins.deploy.tomcat.Tomcat7xAdapter} as an example, but applies to all.
  *
  * v1.0     Stored password as plain text
- *          <code>
+ *          <pre>{@code
  *              <Tomcat7xAdapter>
  *                  <userName>admin</userName>
  *                  <password>pw</password>
  *                  <url>http://example.com:8080</url>
  *              </Tomcat7xAdapter>
- *          </code>
+ *          }</pre>
  *
  * v1.9     Used {@link hudson.util.Scrambler} to base64 encode password. readResolve converted plaintext password
  *          to passwordScrambled.
- *          <code>
+ *          <pre>{@code
  *              <Tomcat7xAdapter>
  *                  <userName>admin</userName>
  *                  <passwordScrambled>cHcNCg==</passwordScrambled>
  *                  <url>http://example.com:8080</url>
  *              </Tomcat7xAdapter>
- *          </code>
+ *          }</pre>
  *
  * v1.11    Full support of credentials. To be backwards compatible and not break builds converts old configurations
  *          from password or passwordScrambled to credentials.
- *          <code>
+ *          <pre>{@code
  *              <Tomcat7xAdapter>
  *                  <credentialsId>aDjnKd4j-s66fnF53-2dmAS7PkqD4</credentialsId>
  *                  <url>http://example.com:8080</url>
  *              </Tomcat7xAdapter>
- *          </code>
+ *          }</pre>
  *
  * @author Alex Johnson
  * @author Kohsuke Kawaguchi
  */
 public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContainerAdapterImpl {
     @Deprecated // backward compatibility
-    public String userName, password, passwordScrambled;
+    private String userName, password, passwordScrambled;
 
     @CheckForNull
     private String credentialsId;
@@ -62,16 +65,17 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
 
     public PasswordProtectedAdapterCargo(String credentialsId) {
         this.credentialsId = Util.fixEmpty(credentialsId);
-        credentials = ContainerAdapterDescriptor.lookupCredentials(null, credentialsId);
+        credentials = null;
     }
 
     @Deprecated
     public PasswordProtectedAdapterCargo(String userName, String password) {
         this.userName = userName;
         this.password = password;
+        migrateCredentials();
     }
 
-    public void trackCredentials(Job job) {
+    public void loadCredentials(Job job) {
         credentials = ContainerAdapterDescriptor.lookupCredentials(job, credentialsId);
         CredentialsProvider.track(job, credentials);
     }
@@ -86,6 +90,7 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
     }
 
     @Property(RemotePropertySet.PASSWORD)
+    @Restricted(NoExternalUse.class)
     public String getPassword() {
         return credentials.getPassword().getPlainText();
     }
@@ -93,7 +98,7 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
     /**
      * Migrates to credentials.
      */
-    public void migrateCredentials() throws IOException {
+    public void migrateCredentials() {
         if (credentialsId == null) {
             if (passwordScrambled != null) {
                 password = Scrambler.descramble(passwordScrambled);
@@ -101,7 +106,12 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
 
             credentials = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,
                     null, "Deploy credentials for " + getContainerId(), userName, password);
-            CredentialsProvider.lookupStores(Jenkins.getInstance()).iterator().next().addCredentials(Domain.global(), credentials);
+            try {
+                CredentialsProvider.lookupStores(Jenkins.getInstance()).iterator().next().addCredentials(Domain.global(), credentials);
+            } catch (IOException e) {
+                Logger.getLogger(getClass().getName()).warning("[deploy-plugin] WARN: credentials were " +
+                        "created but not added to the config");
+            }
 
             credentialsId = credentials.getId();
             userName = null;

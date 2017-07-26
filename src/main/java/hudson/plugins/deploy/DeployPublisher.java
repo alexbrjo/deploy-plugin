@@ -59,7 +59,7 @@ public class DeployPublisher extends Notifier implements Serializable {
                 for (ContainerAdapter adapter : adapters) {
                     if (adapter instanceof PasswordProtectedAdapterCargo) {
                         // protected containers need Job to do credentialId lookup and usage tracking
-                        ((PasswordProtectedAdapterCargo) adapter).trackCredentials(build.getParent());
+                        ((PasswordProtectedAdapterCargo) adapter).loadCredentials(build.getParent());
                     }
                     if (!adapter.redeploy(warFile, contextPath, build, launcher, listener)) {
                         build.setResult(Result.FAILURE);
