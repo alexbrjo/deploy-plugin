@@ -144,7 +144,12 @@ public class GlassFish3xAdapterTest {
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         BuildListener listener = new StreamBuildListener(new ByteArrayOutputStream());
 
-        adapter = new  GlassFish3xAdapter(getVariable(homeVariable), password, getVariable(usernameVariable), getVariable(adminPortVariable), null);
+
+        UsernamePasswordCredentialsImpl c = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, null,
+                "", getVariable(usernameVariable), password);
+        CredentialsProvider.lookupStores(jenkinsRule.jenkins).iterator().next().addCredentials(Domain.global(), c);
+
+        adapter = new  GlassFish3xAdapter(getVariable(homeVariable), c.getId(), getVariable(adminPortVariable), null);
         Configuration config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
         adapter.migrateCredentials();
         adapter.loadCredentials(project);
@@ -153,7 +158,7 @@ public class GlassFish3xAdapterTest {
         Assert.assertEquals(username, config.getPropertyValue(RemotePropertySet.USERNAME));
         Assert.assertEquals(adminPort, config.getPropertyValue(GlassFishPropertySet.ADMIN_PORT));
 
-        remoteAdapter = new  GlassFish3xAdapter(null, password, getVariable(usernameVariable), getVariable(adminPortVariable), getVariable(hostnameVariable));
+        remoteAdapter = new  GlassFish3xAdapter(null, c.getId(), getVariable(adminPortVariable), getVariable(hostnameVariable));
         config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
         remoteAdapter.migrateCredentials();
         remoteAdapter.loadCredentials(project);

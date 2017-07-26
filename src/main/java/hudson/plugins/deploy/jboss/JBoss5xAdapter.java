@@ -15,11 +15,6 @@ public class JBoss5xAdapter extends JBossAdapter {
         super(url, credentialsId);
     }
 
-    @Deprecated
-    public JBoss5xAdapter(String url, String password, String userName) {
-        super(url, password, userName);
-    }
-
     @Override
     public String getContainerId() {
         return "jboss5x";

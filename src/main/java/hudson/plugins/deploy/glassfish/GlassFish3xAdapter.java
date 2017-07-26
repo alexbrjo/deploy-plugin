@@ -26,12 +26,8 @@ public class GlassFish3xAdapter extends GlassFishAdapter {
         GlassFish3xStandaloneLocalConfiguration conf;
     }
 
-    @Deprecated
-    public GlassFish3xAdapter(String home, String password, String userName, String adminPort, String hostname) {
-        super(home, password, userName, adminPort, hostname);
-    }
-
-    /**
+    /**password, userName, adminPort, hostname);
+     }
      * GlassFish Cargo containerId
      * @return glassfish3x
      */

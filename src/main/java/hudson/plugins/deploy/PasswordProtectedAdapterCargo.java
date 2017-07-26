@@ -11,6 +11,7 @@ import hudson.util.Scrambler;
 import jenkins.model.Jenkins;
 import org.codehaus.cargo.container.property.RemotePropertySet;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.CheckForNull;
@@ -68,6 +69,7 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
         credentials = null;
     }
 
+    @Restricted(DoNotUse.class)
     @Deprecated
     public PasswordProtectedAdapterCargo(String userName, String password) {
         this.userName = userName;

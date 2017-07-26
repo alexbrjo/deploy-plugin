@@ -12,11 +12,6 @@ public class JBoss6xAdapter extends JBossAdapter {
         super(url, credentialsId);
     }
 
-    @Deprecated
-    public JBoss6xAdapter(String url, String password, String userName) {
-        super(url, password, userName);
-    }
-
     @Override
     public String getContainerId() {
         return "jboss6x";

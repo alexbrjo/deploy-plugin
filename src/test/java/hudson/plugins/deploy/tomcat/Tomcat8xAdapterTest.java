@@ -78,7 +78,11 @@ public class Tomcat8xAdapterTest {
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         BuildListener listener = new StreamBuildListener(new ByteArrayOutputStream());
 
-        adapter = new  Tomcat8xAdapter(getVariable(urlVariable), password, getVariable(usernameVariable));
+        UsernamePasswordCredentialsImpl c = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, null,
+                "", getVariable(usernameVariable), password);
+        CredentialsProvider.lookupStores(jenkinsRule.jenkins).iterator().next().addCredentials(Domain.global(), c);
+
+        adapter = new  Tomcat8xAdapter(getVariable(urlVariable), c.getId());
         Configuration config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
         adapter.migrateCredentials();
         adapter.loadCredentials(project);

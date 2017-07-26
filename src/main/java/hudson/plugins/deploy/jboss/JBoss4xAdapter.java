@@ -17,11 +17,6 @@ public class JBoss4xAdapter extends JBossAdapter {
         super(url, credentialsId);
     }
 
-    @Deprecated
-    public JBoss4xAdapter(String url, String password, String userName) {
-        super(url, password, userName);
-    }
-
     @Override
     public String getContainerId() {
         return "jboss4x";

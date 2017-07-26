@@ -16,11 +16,6 @@ public class Tomcat4xAdapter extends TomcatAdapter {
         super(url, credentialsId);
     }
 
-    @Deprecated
-    public Tomcat4xAdapter(String url, String password, String userName) {
-        super(url, password, userName);
-    }
-
     public String getContainerId() {
         return "tomcat4x";
     }

@@ -51,14 +51,6 @@ public abstract class GlassFishAdapter extends PasswordProtectedAdapterCargo {
         this.hostname = hostname;
     }
 
-    @Deprecated
-    protected GlassFishAdapter(String home, String password, String userName, String adminPort, String hostname) {
-        super(userName, password);
-        this.home = home;
-        this.adminPort = adminPort;
-        this.hostname = hostname;
-    }
-
     /**
      * {@inheritDoc}
      */

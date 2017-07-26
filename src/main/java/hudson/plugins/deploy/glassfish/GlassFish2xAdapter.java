@@ -15,11 +15,6 @@ public class GlassFish2xAdapter extends GlassFishAdapter {
         super(home, credentialsId, adminPort, null);
     }
 
-    @Deprecated
-    public GlassFish2xAdapter(String home, String password, String userName, String adminPort) {
-        super(home, password, userName, adminPort, null);
-    }
-
     @Override
     protected String getContainerId() {
         return "glassfish2x";
