@@ -16,6 +16,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.CheckForNull;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -56,8 +58,11 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContainerAdapterImpl {
-    @Deprecated // backward compatibility
-    private String userName, password, passwordScrambled;
+    // backwards compatibility
+    @Restricted(NoExternalUse.class) @Deprecated
+    public String userName;
+    @Deprecated
+    private String password, passwordScrambled;
 
     @CheckForNull
     private String credentialsId;
@@ -74,7 +79,7 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
     public PasswordProtectedAdapterCargo(String userName, String password) {
         this.userName = userName;
         this.password = password;
-        migrateCredentials();
+        migrateCredentials(Collections.EMPTY_LIST);
     }
 
     public void loadCredentials(Job job) {
@@ -100,22 +105,36 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
     /**
      * Migrates to credentials.
      */
-    public void migrateCredentials() {
+    public void migrateCredentials(List<StandardUsernamePasswordCredentials> generated) {
         if (credentialsId == null) {
             if (passwordScrambled != null) {
                 password = Scrambler.descramble(passwordScrambled);
             }
 
-            credentials = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,
-                    null, "Deploy credentials for " + getContainerId(), userName, password);
-            try {
-                CredentialsProvider.lookupStores(Jenkins.getInstance()).iterator().next().addCredentials(Domain.global(), credentials);
-            } catch (IOException e) {
-                Logger.getLogger(getClass().getName()).warning("[deploy-plugin] WARN: credentials were " +
-                        "created but not added to the config");
+            StandardUsernamePasswordCredentials newCredentials = null;
+            for (StandardUsernamePasswordCredentials c : generated) {
+                if (c.getUsername().equals(userName) && c.getPassword().getPlainText().equals(password)) {
+                    newCredentials = c;
+                }
             }
 
-            credentialsId = credentials.getId();
+            if (newCredentials == null) {
+                newCredentials = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,
+                        null, "Generated deploy-plugin credentials for " + getContainerId(),
+                        userName, password);
+                try {
+                    CredentialsProvider.lookupStores(Jenkins.getInstance())
+                            .iterator().next().addCredentials(Domain.global(), newCredentials);
+                    generated.add(newCredentials);
+                    Logger.getLogger(getClass().getName()).warning("[deploy-plugin] INFO: credentials were " +
+                            "generated and added to config");
+                } catch (IOException e) {
+                    Logger.getLogger(getClass().getName()).warning("[deploy-plugin] WARN: credentials were " +
+                            "not added to the config");
+                }
+            }
+
+            credentialsId = newCredentials.getId();
             userName = null;
             password = null;
             passwordScrambled = null;

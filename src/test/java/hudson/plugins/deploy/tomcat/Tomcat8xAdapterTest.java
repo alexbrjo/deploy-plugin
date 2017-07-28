@@ -13,6 +13,7 @@ import hudson.model.Node;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Collections;
 
 import org.codehaus.cargo.container.ContainerType;
 import org.codehaus.cargo.container.configuration.Configuration;
@@ -84,7 +85,7 @@ public class Tomcat8xAdapterTest {
 
         adapter = new  Tomcat8xAdapter(getVariable(urlVariable), c.getId());
         Configuration config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
-        adapter.migrateCredentials();
+        adapter.migrateCredentials(Collections.EMPTY_LIST);
         adapter.loadCredentials(project);
         adapter.configure(config, project.getEnvironment(n, listener), build.getBuildVariableResolver());
 

@@ -1,5 +1,6 @@
 package hudson.plugins.deploy;
 
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -127,15 +128,19 @@ public class DeployPublisher extends Notifier implements Serializable {
         @SuppressWarnings("deprecation")
         @Override
         public void onLoaded() {
+            List<StandardUsernamePasswordCredentials> generatedCredentials = new ArrayList<StandardUsernamePasswordCredentials>();
             for (AbstractProject<?,?> project : Jenkins.getActiveInstance().getAllItems(AbstractProject.class)) {
                 try {
                     DeployPublisher d = project.getPublishersList().get(DeployPublisher.class);
+                    if (d == null) {
+                        continue;
+                    }
                     boolean modified = false;
                     for (ContainerAdapter a : d.getAdapters()) {
                         if (a instanceof PasswordProtectedAdapterCargo) {
                             PasswordProtectedAdapterCargo ppac = (PasswordProtectedAdapterCargo) a;
                             if (ppac.getCredentialsId() == null) {
-                                ppac.migrateCredentials();
+                                ppac.migrateCredentials(generatedCredentials);
                                 modified = true;
                             }
                         }

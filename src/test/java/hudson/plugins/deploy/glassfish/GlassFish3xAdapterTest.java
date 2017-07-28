@@ -16,6 +16,7 @@ import hudson.slaves.EnvironmentVariablesNodeProperty;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
 import org.codehaus.cargo.container.Container;
@@ -151,7 +152,7 @@ public class GlassFish3xAdapterTest {
 
         adapter = new  GlassFish3xAdapter(getVariable(homeVariable), c.getId(), getVariable(adminPortVariable), null);
         Configuration config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
-        adapter.migrateCredentials();
+        adapter.migrateCredentials(Collections.EMPTY_LIST);
         adapter.loadCredentials(project);
         adapter.configure(config, project.getEnvironment(n, listener), build.getBuildVariableResolver());
 
@@ -160,7 +161,7 @@ public class GlassFish3xAdapterTest {
 
         remoteAdapter = new  GlassFish3xAdapter(null, c.getId(), getVariable(adminPortVariable), getVariable(hostnameVariable));
         config = new DefaultConfigurationFactory().createConfiguration(adapter.getContainerId(), ContainerType.REMOTE, ConfigurationType.RUNTIME);
-        remoteAdapter.migrateCredentials();
+        remoteAdapter.migrateCredentials(Collections.EMPTY_LIST);
         remoteAdapter.loadCredentials(project);
         remoteAdapter.configure(config, project.getEnvironment(n, listener), build.getBuildVariableResolver());
 
