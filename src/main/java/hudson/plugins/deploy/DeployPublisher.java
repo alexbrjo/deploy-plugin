@@ -57,15 +57,9 @@ public class DeployPublisher extends Notifier implements Serializable {
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         if (build.getResult().equals(Result.SUCCESS) || onFailure) {
             for (FilePath warFile : build.getWorkspace().list(this.war)) {
-                for (ContainerAdapter adapter : adapters) {
-                    if (adapter instanceof PasswordProtectedAdapterCargo) {
-                        // protected containers need Job to do credentialId lookup and usage tracking
-                        ((PasswordProtectedAdapterCargo) adapter).loadCredentials(build.getParent());
-                    }
-                    if (!adapter.redeploy(warFile, contextPath, build, launcher, listener)) {
+                for (ContainerAdapter adapter : adapters)
+                    if (!adapter.redeploy(warFile, contextPath, build, launcher, listener))
                         build.setResult(Result.FAILURE);
-                    }
-                }
             }
         }
 

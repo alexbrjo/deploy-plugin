@@ -5,8 +5,13 @@ import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.cloudbees.plugins.credentials.domains.Domain;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
-import hudson.Util;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import hudson.model.Job;
+import hudson.Util;
 import hudson.util.Scrambler;
 import jenkins.model.Jenkins;
 import org.codehaus.cargo.container.property.RemotePropertySet;
@@ -58,20 +63,18 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContainerAdapterImpl {
-    // backwards compatibility
-    @Restricted(NoExternalUse.class) @Deprecated
-    public String userName;
-    @Deprecated
-    private String password, passwordScrambled;
+    @Deprecated @Restricted(NoExternalUse.class)
+    private String passwordScrambled; // backwards compatibility
 
+    @XStreamOmitField
+    public String userName;
+    @XStreamOmitField // extra protection to ensure plain password is not stored locally
+    private String password;
     @CheckForNull
     private String credentialsId;
-    @CheckForNull
-    private transient StandardUsernamePasswordCredentials credentials;
 
     public PasswordProtectedAdapterCargo(String credentialsId) {
         this.credentialsId = Util.fixEmpty(credentialsId);
-        credentials = null;
     }
 
     @Restricted(DoNotUse.class)
@@ -79,12 +82,38 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
     public PasswordProtectedAdapterCargo(String userName, String password) {
         this.userName = userName;
         this.password = password;
-        migrateCredentials(Collections.EMPTY_LIST);
+        migrateCredentials(Collections.<StandardUsernamePasswordCredentials>emptyList());
     }
 
+    @Override
+    public boolean redeploy(FilePath war, String aContextPath, AbstractBuild<?,?> build, Launcher launcher,
+                            final BuildListener listener) throws IOException, InterruptedException {
+        try {
+            loadCredentials(build.getParent());
+            super.redeploy(war, aContextPath, build, launcher, listener);
+        } finally {
+            wipeCredentials();
+        }
+        return true;
+    }
+
+    /**
+     *
+     * @param job the job to lookup the scope for
+     */
     public void loadCredentials(Job job) {
-        credentials = ContainerAdapterDescriptor.lookupCredentials(job, credentialsId);
+        StandardUsernamePasswordCredentials credentials = ContainerAdapterDescriptor.lookupCredentials(job, credentialsId);
         CredentialsProvider.track(job, credentials);
+        userName = credentials.getUsername();
+        password = credentials.getPassword().getPlainText();
+    }
+
+    /**
+     * Clears stored credentials
+     */
+    public void wipeCredentials() {
+        userName = null;
+        password = null;
     }
 
     public String getCredentialsId() {
@@ -93,13 +122,13 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
 
     @Property(RemotePropertySet.USERNAME)
     public String getUsername() {
-        return credentials.getUsername();
+        return userName;
     }
 
     @Property(RemotePropertySet.PASSWORD)
     @Restricted(NoExternalUse.class)
     public String getPassword() {
-        return credentials.getPassword().getPlainText();
+        return password;
     }
 
     /**
