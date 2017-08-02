@@ -79,18 +79,6 @@ public abstract class ContainerAdapterDescriptor extends Descriptor<ContainerAda
             return FormValidation.ok();
         }
 
-        url = Util.fixEmptyAndTrim(url);
-        if (url == null)
-        // not set, can't check
-        {
-            return FormValidation.ok();
-        }
-
-        if (url.indexOf('$') >= 0)
-        // set by variable, can't check
-        {
-            return FormValidation.ok();
-        }
         for (ListBoxModel.Option o : CredentialsProvider
                 .listCredentials(StandardUsernameCredentials.class, project, project instanceof Queue.Task
                                 ? Tasks.getAuthenticationOf((Queue.Task) project) : ACL.SYSTEM, new ArrayList<DomainRequirement>(),

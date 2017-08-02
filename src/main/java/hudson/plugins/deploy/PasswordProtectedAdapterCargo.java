@@ -21,7 +21,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.CheckForNull;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -63,12 +63,12 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContainerAdapterImpl {
-    @Deprecated @Restricted(NoExternalUse.class)
-    private String passwordScrambled; // backwards compatibility
+    @Deprecated // backwards compatibility
+    private String passwordScrambled;
 
-    @XStreamOmitField
+    @XStreamOmitField // do not store the password locally, but serialize for remoting
     public String userName;
-    @XStreamOmitField // extra protection to ensure plain password is not stored locally
+    @XStreamOmitField
     private String password;
     @CheckForNull
     private String credentialsId;
@@ -82,22 +82,18 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
     public PasswordProtectedAdapterCargo(String userName, String password) {
         this.userName = userName;
         this.password = password;
-        migrateCredentials(Collections.<StandardUsernamePasswordCredentials>emptyList());
+        migrateCredentials(new ArrayList<StandardUsernamePasswordCredentials>());
     }
 
     @Override
     public boolean redeploy(FilePath war, String aContextPath, AbstractBuild<?,?> build, Launcher launcher,
                             final BuildListener listener) throws IOException, InterruptedException {
-        try {
-            loadCredentials(build.getParent());
-            super.redeploy(war, aContextPath, build, launcher, listener);
-        } finally {
-            wipeCredentials();
-        }
-        return true;
+        loadCredentials(build.getParent());
+        return super.redeploy(war, aContextPath, build, launcher, listener);
     }
 
     /**
+     * Loads the credentials for a job.
      *
      * @param job the job to lookup the scope for
      */
@@ -106,14 +102,6 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
         CredentialsProvider.track(job, credentials);
         userName = credentials.getUsername();
         password = credentials.getPassword().getPlainText();
-    }
-
-    /**
-     * Clears stored credentials
-     */
-    public void wipeCredentials() {
-        userName = null;
-        password = null;
     }
 
     public String getCredentialsId() {

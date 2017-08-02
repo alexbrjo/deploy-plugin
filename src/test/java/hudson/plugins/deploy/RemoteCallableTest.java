@@ -35,7 +35,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -51,14 +50,16 @@ public class RemoteCallableTest {
     @Test
     public void testCallableSerialization () throws Exception {
         j.jenkins.setNumExecutors(0);
-        Slave s = j.createSlave();
+        Slave s = j.createOnlineSlave();
 
         /* create fake war, credentials and adapter to test RemoteCallable serialization */
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedNode(s);
-        FilePath path = new FilePath(new File(s.getRemoteFS())).createTempDir("worksp",null);
-        FilePath war = path.createTempFile("simple", ".war");
-        project.setCustomWorkspace(path.getRemote());
+        project.scheduleBuild2(0).get(); // touch workspace
+
+        FilePath ws = s.getWorkspaceFor(project);
+        FilePath war = ws.createTempFile("simple", ".war");
+        project.setCustomWorkspace(ws.getRemote());
 
         CredentialsProvider.lookupStores(Jenkins.getInstance()).iterator().next().addCredentials(Domain.global(),
                 new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "test-id", "", "user", "pass"));

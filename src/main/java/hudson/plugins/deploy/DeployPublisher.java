@@ -14,15 +14,18 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jenkins.model.Jenkins;
+import jenkins.util.io.FileBoolean;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -122,6 +125,11 @@ public class DeployPublisher extends Notifier implements Serializable {
         @SuppressWarnings("deprecation")
         @Override
         public void onLoaded() {
+            FileBoolean migrated = new FileBoolean(
+                    new File(Jenkins.getActiveInstance().getRootDir(), getClass().getCanonicalName() + ".migratedCredentials"));
+            if (migrated.isOn()) {
+                return;
+            }
             List<StandardUsernamePasswordCredentials> generatedCredentials = new ArrayList<StandardUsernamePasswordCredentials>();
             for (AbstractProject<?,?> project : Jenkins.getActiveInstance().getAllItems(AbstractProject.class)) {
                 try {
@@ -140,14 +148,14 @@ public class DeployPublisher extends Notifier implements Serializable {
                         }
                     }
                     if (modified) {
-                        Logger.getLogger(DeployPublisher.class.getName()).info(
-                                String.format("Successfully migrated DeployPublisher in project: %s", project.getName()));
+                        Logger.getLogger(DeployPublisher.class.getName()).log(Level.INFO, "Successfully migrated DeployPublisher in project: {0}", project.getName());
                         project.save();
                     }
                 } catch (IOException e) {
-                    Logger.getLogger(DeployPublisher.class.getName()).warning("Migration unsuccessful");
+                    Logger.getLogger(DeployPublisher.class.getName()).log(Level.WARNING, "Migration unsuccessful", e);
                 }
             }
+            migrated.on();
         }
     }
 
