@@ -1,5 +1,7 @@
 package hudson.plugins.deploy.weblogic;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -7,6 +9,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * 
  * @author Kohsuke Kawaguchi
  */
+@Restricted(DoNotUse.class)
 public class WebLogic10_3_xAdapter extends WebLogicAdapter {
     @DataBoundConstructor
     public WebLogic10_3_xAdapter(String home, String credentialsId, String server, Integer port) {
