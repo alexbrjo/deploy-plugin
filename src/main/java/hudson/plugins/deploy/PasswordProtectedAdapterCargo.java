@@ -99,7 +99,7 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
      * @param job the job to lookup the scope for
      */
     public void loadCredentials(Job job) {
-        StandardUsernamePasswordCredentials credentials = ContainerAdapterDescriptor.lookupCredentials(job, credentialsId);
+        StandardUsernamePasswordCredentials credentials = ContainerAdapterDescriptor.lookupCredentials(job, getUrl(), credentialsId);
         CredentialsProvider.track(job, credentials);
         userName = credentials.getUsername();
         password = credentials.getPassword().getPlainText();

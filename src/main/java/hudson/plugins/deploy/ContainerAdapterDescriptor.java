@@ -43,9 +43,9 @@ public abstract class ContainerAdapterDescriptor extends Descriptor<ContainerAda
     protected ContainerAdapterDescriptor() {
     }
 
-    protected static StandardUsernamePasswordCredentials lookupCredentials(@CheckForNull Item project, String credentialId) {
+    protected static StandardUsernamePasswordCredentials lookupCredentials(@CheckForNull Item project, String url, String credentialId) {
         return (credentialId == null) ? null : CredentialsMatchers.firstOrNull(
-                CredentialsProvider.lookupCredentials(StandardUsernamePasswordCredentials.class, project, ACL.SYSTEM, new ArrayList<DomainRequirement>()),
+                CredentialsProvider.lookupCredentials(StandardUsernamePasswordCredentials.class, project, ACL.SYSTEM, URIRequirementBuilder.fromUri(url).build()),
                 CredentialsMatchers.withId(credentialId));
     }
 
