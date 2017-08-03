@@ -125,8 +125,7 @@ public class DeployPublisher extends Notifier implements Serializable {
         @SuppressWarnings("deprecation")
         @Override
         public void onLoaded() {
-            FileBoolean migrated = new FileBoolean(
-                    new File(Jenkins.getActiveInstance().getRootDir(), getClass().getCanonicalName() + ".migratedCredentials"));
+            FileBoolean migrated = new FileBoolean(getClass(), "migratedCredentials");
             if (migrated.isOn()) {
                 return;
             }

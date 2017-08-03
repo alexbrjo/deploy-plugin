@@ -59,7 +59,6 @@ public class RemoteCallableTest {
 
         FilePath ws = s.getWorkspaceFor(project);
         FilePath war = ws.createTempFile("simple", ".war");
-        project.setCustomWorkspace(ws.getRemote());
 
         CredentialsProvider.lookupStores(Jenkins.getInstance()).iterator().next().addCredentials(Domain.global(),
                 new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "test-id", "", "user", "pass"));

@@ -9,8 +9,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 public class WebLogic10_3_xAdapter extends WebLogicAdapter {
     @DataBoundConstructor
-    public WebLogic10_3_xAdapter(String home, String userName, String password, String server, Integer port) {
-        super(home, userName, password, server, port);
+    public WebLogic10_3_xAdapter(String home, String credentialsId, String server, Integer port) {
+        super(home, credentialsId, server, port);
     }
 
     protected String getContainerId() {

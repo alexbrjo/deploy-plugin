@@ -50,7 +50,6 @@ public abstract class ContainerAdapterDescriptor extends Descriptor<ContainerAda
 
     @Restricted(NoExternalUse.class)
     public ListBoxModel doFillCredentialsIdItems(@AncestorInPath Item project,
-                                                 @QueryParameter String url,
                                                  @QueryParameter String credentialsId) {
         if (project == null && !Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER) ||
                 project != null && !project.hasPermission(Item.EXTENDED_READ)) {

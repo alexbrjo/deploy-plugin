@@ -23,6 +23,7 @@ import javax.annotation.CheckForNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -143,10 +144,10 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
                     CredentialsProvider.lookupStores(Jenkins.getInstance())
                             .iterator().next().addCredentials(Domain.global(), newCredentials);
                     generated.add(newCredentials);
-                    Logger.getLogger(getClass().getName()).warning("[deploy-plugin] INFO: credentials were " +
+                    Logger.getLogger(DeployPublisher.class.getName()).log(Level.INFO, "credentials were " +
                             "generated and added to config");
                 } catch (IOException e) {
-                    Logger.getLogger(getClass().getName()).warning("[deploy-plugin] WARN: credentials were " +
+                    Logger.getLogger(DeployPublisher.class.getName()).log(Level.WARNING, "credentials were " +
                             "not added to the config");
                 }
             }

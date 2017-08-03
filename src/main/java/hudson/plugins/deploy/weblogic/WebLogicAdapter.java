@@ -3,6 +3,7 @@ package hudson.plugins.deploy.weblogic;
 import hudson.EnvVars;
 import hudson.plugins.deploy.ContainerAdapterDescriptor;
 import hudson.plugins.deploy.DefaultCargoContainerAdapterImpl;
+import hudson.plugins.deploy.PasswordProtectedAdapterCargo;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
 
@@ -22,26 +23,20 @@ import org.kohsuke.stapler.QueryParameter;
  * 
  * @author Kohsuke Kawaguchi
  */
-public abstract class WebLogicAdapter extends DefaultCargoContainerAdapterImpl {
-//    @Property(WebLogicPropertySet.ADMIN_USER)
-    public final String userName;
+public abstract class WebLogicAdapter extends PasswordProtectedAdapterCargo {
 
-//    @Property(WebLogicPropertySet.ADMIN_PWD)
-    public final String password;
-
-//    @Property(WebLogicPropertySet.SERVER)
+    // @Property(WebLogicPropertySet.SERVER)
     public final String server;
 
-//    @Property(ServletPropertySet.PORT)
+    // @Property(ServletPropertySet.PORT)
     public final Integer port;
 
     public final String home;
 
     //@DataBoundConstructor
-    public WebLogicAdapter(String home, String userName, String password, String server, Integer port) {
+    public WebLogicAdapter(String home, String credentialsId, String server, Integer port) {
+        super(credentialsId);
         this.home = home;
-        this.userName = userName;
-        this.password = password;
         this.server = server;
         this.port = port;
     }
