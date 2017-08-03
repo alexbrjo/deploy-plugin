@@ -17,6 +17,7 @@ import org.codehaus.cargo.generic.ContainerFactory;
 import org.codehaus.cargo.generic.configuration.ConfigurationFactory;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -25,7 +26,7 @@ import org.kohsuke.stapler.QueryParameter;
  * 
  * @author Kohsuke Kawaguchi
  */
-@Restricted(DoNotUse.class)
+@Restricted(NoExternalUse.class)
 public abstract class WebLogicAdapter extends PasswordProtectedAdapterCargo {
 
     // @Property(WebLogicPropertySet.SERVER)
