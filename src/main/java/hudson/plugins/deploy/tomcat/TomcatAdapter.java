@@ -29,6 +29,11 @@ public abstract class TomcatAdapter extends PasswordProtectedAdapterCargo {
         this.url = url;
     }
 
+    @Override
+    public String getUrl() {
+        return url;
+    }
+
     public void configure(Configuration config, EnvVars envVars, VariableResolver<String> resolver) {
         super.configure(config, envVars, resolver);
         try {

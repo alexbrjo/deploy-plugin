@@ -4,6 +4,9 @@
     <f:entry title="${%Credentials}" field="credentialsId">
         <c:select/>
     </f:entry>
+    <f:invisibleEntry>
+      <f:textbox field="url"/>
+    </f:invisibleEntry>
     <f:entry title="GlassFish home" field="home">
         <f:textbox />
     </f:entry>

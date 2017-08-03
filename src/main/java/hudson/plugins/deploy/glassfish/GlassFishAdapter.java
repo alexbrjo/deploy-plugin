@@ -4,6 +4,7 @@ import hudson.EnvVars;
 import hudson.plugins.deploy.PasswordProtectedAdapterCargo;
 import hudson.util.VariableResolver;
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.cargo.container.Container;
 import org.codehaus.cargo.container.ContainerType;
 import org.codehaus.cargo.container.configuration.ConfigurationType;
@@ -49,6 +50,11 @@ public abstract class GlassFishAdapter extends PasswordProtectedAdapterCargo {
         this.home = home;
         this.adminPort = adminPort;
         this.hostname = hostname;
+    }
+
+    @Override
+    public String getUrl() {
+        return "http://" + StringUtils.defaultIfBlank(hostname, "localhost") + ':' + adminPort;
     }
 
     /**

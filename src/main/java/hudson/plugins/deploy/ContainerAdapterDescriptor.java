@@ -6,6 +6,7 @@ import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.cloudbees.plugins.credentials.domains.DomainRequirement;
+import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import hudson.Util;
 import hudson.model.Descriptor;
 import hudson.model.Item;
@@ -50,6 +51,7 @@ public abstract class ContainerAdapterDescriptor extends Descriptor<ContainerAda
 
     @Restricted(NoExternalUse.class)
     public ListBoxModel doFillCredentialsIdItems(@AncestorInPath Item project,
+                                                 @QueryParameter String url,
                                                  @QueryParameter String credentialsId) {
         if (project == null && !Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER) ||
                 project != null && !project.hasPermission(Item.EXTENDED_READ)) {
@@ -60,7 +62,7 @@ public abstract class ContainerAdapterDescriptor extends Descriptor<ContainerAda
                 .includeMatchingAs(
                         project instanceof Queue.Task
                                 ? Tasks.getAuthenticationOf((Queue.Task) project) : ACL.SYSTEM,
-                        project, StandardUsernameCredentials.class, new ArrayList<DomainRequirement>(),
+                        project, StandardUsernameCredentials.class, URIRequirementBuilder.fromUri(url).build(),
                         CredentialsMatchers.instanceOf(StandardUsernamePasswordCredentials.class))
                 .includeCurrentValue(credentialsId);
     }
@@ -80,7 +82,7 @@ public abstract class ContainerAdapterDescriptor extends Descriptor<ContainerAda
 
         for (ListBoxModel.Option o : CredentialsProvider
                 .listCredentials(StandardUsernameCredentials.class, project, project instanceof Queue.Task
-                                ? Tasks.getAuthenticationOf((Queue.Task) project) : ACL.SYSTEM, new ArrayList<DomainRequirement>(),
+                                ? Tasks.getAuthenticationOf((Queue.Task) project) : ACL.SYSTEM, URIRequirementBuilder.fromUri(url).build(),
                         CredentialsMatchers.instanceOf(StandardUsernamePasswordCredentials.class))) {
             if (StringUtils.equals(value, o.value)) {
                 return FormValidation.ok();

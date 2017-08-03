@@ -25,6 +25,11 @@ public abstract class JBossAdapter extends PasswordProtectedAdapterCargo {
     }
 
     @Override
+    public String getUrl() {
+        return url;
+    }
+
+    @Override
     public void configure(Configuration config, EnvVars envVars, VariableResolver<String> resolver) {
         super.configure(config, envVars, resolver);
         try {

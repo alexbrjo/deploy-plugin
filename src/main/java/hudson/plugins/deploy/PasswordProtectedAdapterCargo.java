@@ -120,6 +120,10 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
         return password;
     }
 
+    public String getUrl() {
+        return null;
+    }
+
     /**
      * Migrates to credentials.
      */
