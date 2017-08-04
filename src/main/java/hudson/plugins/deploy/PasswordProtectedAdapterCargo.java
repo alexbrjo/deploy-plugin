@@ -100,9 +100,14 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
      */
     public void loadCredentials(Job job) {
         StandardUsernamePasswordCredentials credentials = ContainerAdapterDescriptor.lookupCredentials(job, getUrl(), credentialsId);
-        CredentialsProvider.track(job, credentials);
-        userName = credentials.getUsername();
-        password = credentials.getPassword().getPlainText();
+        if (credentials != null) {
+            CredentialsProvider.track(job, credentials);
+            userName = credentials.getUsername();
+            password = credentials.getPassword().getPlainText();
+        } else {
+            Logger.getLogger(DeployPublisher.class.getName()).log(Level.WARNING, "Tried to load DeployPublisher credentials for credentials ID " + credentialsId +
+                    " but couldn't find them!");
+        }
     }
 
     public String getCredentialsId() {
@@ -126,8 +131,11 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
 
     /**
      * Migrates to credentials.
+     * In case where migration fails, we retain the original username/password/passwordScrambled fields and should avoid
+     * saving to disk until the user can help resolve the situation.
+     * @return True if migration succeeded, false if we tried to create credentials and failed.
      */
-    public void migrateCredentials(List<StandardUsernamePasswordCredentials> generated) {
+    public boolean migrateCredentials(List<StandardUsernamePasswordCredentials> generated) {
         if (credentialsId == null) {
             if (passwordScrambled != null) {
                 password = Scrambler.descramble(passwordScrambled);
@@ -140,7 +148,8 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
                 }
             }
 
-            if (newCredentials == null) {
+            boolean validCredentials = newCredentials != null;
+            if (!validCredentials) {
                 newCredentials = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,
                         null, "Generated deploy-plugin credentials for " + getContainerId(),
                         userName, password);
@@ -148,18 +157,25 @@ public abstract class PasswordProtectedAdapterCargo extends DefaultCargoContaine
                     CredentialsProvider.lookupStores(Jenkins.getInstance())
                             .iterator().next().addCredentials(Domain.global(), newCredentials);
                     generated.add(newCredentials);
+                    validCredentials = true;
                     Logger.getLogger(DeployPublisher.class.getName()).log(Level.INFO, "credentials were " +
                             "generated and added to config");
                 } catch (IOException e) {
-                    Logger.getLogger(DeployPublisher.class.getName()).log(Level.WARNING, "credentials were " +
-                            "not added to the config");
+                    Logger.getLogger(DeployPublisher.class.getName()).log(Level.SEVERE, "credentials were generated with id "+newCredentials.getId()+
+                            " but could not be stored.  Please create valid credentials or fix this job.");
+                    validCredentials = false;
                 }
             }
 
+            if (validCredentials) {  // Only blow away the userName and passWord if we successfully created credentials
+                userName = null;
+                password = null;
+                passwordScrambled = null;
+            }
+
             credentialsId = newCredentials.getId();
-            userName = null;
-            password = null;
-            passwordScrambled = null;
+            return validCredentials;
         }
+        return true;
     }
 }

@@ -137,18 +137,24 @@ public class DeployPublisher extends Notifier implements Serializable {
                         continue;
                     }
                     boolean modified = false;
+                    boolean successful = true;
                     for (ContainerAdapter a : d.getAdapters()) {
                         if (a instanceof PasswordProtectedAdapterCargo) {
                             PasswordProtectedAdapterCargo ppac = (PasswordProtectedAdapterCargo) a;
                             if (ppac.getCredentialsId() == null) {
-                                ppac.migrateCredentials(generatedCredentials);
+                                successful &= ppac.migrateCredentials(generatedCredentials);
                                 modified = true;
                             }
                         }
                     }
                     if (modified) {
-                        Logger.getLogger(DeployPublisher.class.getName()).log(Level.INFO, "Successfully migrated DeployPublisher in project: {0}", project.getName());
-                        project.save();
+                        if (successful) {
+                            Logger.getLogger(DeployPublisher.class.getName()).log(Level.INFO, "Successfully migrated DeployPublisher in project: {0}", project.getName());
+                            project.save();
+                        } else {
+                            // Avoid calling project.save() because PasswordProtectedAdapterCargo will null out the username/password fields upon saving
+                            Logger.getLogger(DeployPublisher.class.getName()).log(Level.SEVERE, "Failed to create credentials and migrate DeployPublisher in project: {0}, please manually add credentials.", project.getName());
+                        }
                     }
                 } catch (IOException e) {
                     Logger.getLogger(DeployPublisher.class.getName()).log(Level.WARNING, "Migration unsuccessful", e);
